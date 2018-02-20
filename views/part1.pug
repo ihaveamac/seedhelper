@@ -1,0 +1,14 @@
+include includes/base
+
++base("Part1 Work")
+    h1 Part1 Work
+    p #[a(href="/work" target="_blank") Open the instructions in a new tab]
+    p= `Friend Code: ${device.friendCode}`
+
+    form.pure-form.pure-form-aligned(method="post" enctype="multipart/form-data")
+        fieldset
+            .pure-control-group
+                label(for="p1") Movable_part1
+                input#name(type="file" required name="p1")
+            .pure-controls
+                button.pure-button.pure-button-primary(type="submit") Submit

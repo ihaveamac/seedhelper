@@ -1,0 +1,31 @@
+include includes/base
+
++base("Register")
+    h1 Register
+    form.pure-form.pure-form-aligned(method="post")
+        fieldset
+            .pure-control-group
+                label(for="username") Username
+                input#username(required type="text" name="username" placeholder="Username")
+                span.pure-form-message-inline Required. This isn't shown to other users and is only used to log in.
+            .pure-control-group
+                label(for="password") Password
+                input#password(required type="password" name="password" placeholder="Password")
+                span.pure-form-message-inline Required.
+            
+            .pure-control-group
+                label(for="friendCode") Friend Code
+                input#friendCode(type="text" name="friendCode" placeholder="0000-0000-0000")
+                span.pure-form-message-inline Required. Will be shared with the user who retrieves movable_part1 for you or anyone you retrieve movable_part1 for. Include dashes.
+
+            .pure-control-group
+                label(for="terms") Terms
+                textarea#terms(readonly)
+                    include ../static/terms.txt
+
+            .pure-controls
+                input#agree(name="agree" required type="checkbox")
+                label(for="agree") I agree to these terms and privacy policy
+
+            .pure-controls
+                button.pure-button.pure-button-primary(type="submit") Submit

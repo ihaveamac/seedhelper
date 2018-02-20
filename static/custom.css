@@ -1,0 +1,44 @@
+.pure-menu {
+    background: #5eb95e;
+}
+
+.padding-container {
+    padding: 1em;
+}
+
+.float-right {
+    float: right;
+}
+
+body {
+    font-family: 'Overpass', sans-serif;
+}
+
+.error-flash {
+	border: red solid 1px;
+    padding: 1em;
+	background: rgba(255,0,0,0.5);
+}
+
+.success-flash {
+	border: green solid 1px;
+    padding: 1em;
+	background: rgba(0,255,0,0.5);
+}
+
+a {
+    text-decoration: none;
+}
+
+code {
+    background: rgba(0,0,0,0.2)
+}
+
+.footer a, .footer span {
+    margin-right: 1em;
+}
+
+textarea {
+    width: -webkit-fill-available;
+    height: 20em;
+}

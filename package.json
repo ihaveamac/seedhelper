@@ -1,0 +1,41 @@
+{
+  "name": "seedhelper",
+  "version": "1.0.0",
+  "description": "a tool to help users with obtaining files required for seedminer",
+  "main": "index.js",
+  "scripts": {
+    "test": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/figgyc/seedhelper.git"
+  },
+  "keywords": [
+    "seedhelper",
+    "3ds",
+    "express"
+  ],
+  "author": "figgyc",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/figgyc/seedhelper/issues"
+  },
+  "homepage": "https://github.com/figgyc/seedhelper#readme",
+  "dependencies": {
+    "async": "^2.6.0",
+    "bcrypt": "^1.0.3",
+    "body-parser": "^1.18.2",
+    "connect-redis": "^3.3.3",
+    "express": "^4.16.2",
+    "express-flash": "0.0.2",
+    "express-session": "^1.15.6",
+    "flash": "^1.1.0",
+    "hiredis": "^0.5.0",
+    "multer": "^1.3.0",
+    "passport": "^0.4.0",
+    "passport-local": "^1.0.0",
+    "pug": "^2.0.0-rc.4",
+    "redis": "^2.8.0",
+    "uuid": "^3.2.1"
+  }
+}

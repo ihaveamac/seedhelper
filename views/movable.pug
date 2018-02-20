@@ -1,0 +1,14 @@
+include includes/base
+
++base("Movable Work")
+    h1 Movable Work
+    p #[a(href="/work" target="_blank") Open the instructions in a new tab]
+    p #[a(href=`/static/ugc/part1/${device.friendCode}_part1.sed`)] Download part1
+
+    form.pure-form.pure-form-aligned(method="post" enctype="multipart/form-data")
+        fieldset
+            .pure-control-group
+                label(for="movable") Movable.sed
+                input#name(type="file" required name="movable")
+            .pure-controls
+                button.pure-button.pure-button-primary(type="submit") Submit

@@ -1,0 +1,16 @@
+include includes/base
+
++base("Login")
+    h1 Login
+    form.pure-form.pure-form-aligned(method="post")
+        fieldset
+            .pure-control-group
+                label(for="username") Username
+                input#username(required type="text" name="username" placeholder="Username")
+            .pure-control-group
+                label(for="password") Password
+                input#password(required type="password" name="password" placeholder="Password")
+
+            .pure-controls
+                button.pure-button.pure-button-primary(type="submit") Login
+                a.pure-button(href="/register") Register

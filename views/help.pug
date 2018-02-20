@@ -1,0 +1,57 @@
+include includes/base
+
++base("Help")
+    h2 Help
+    
+    h3 What is Seedhelper? (in more detail)
+    p Seedhelper is a website designed to help people with GPUs and hacked 3DS devices to assist users in finding their movable.sed to use the seedplanter program and obtain CFW. This is done using a website that matches together people with the required devices and the people who need services. By signing up, you can submit your friend code or a movable_part1 obtained with homebrew (see below) and you will end up with a movable.sed that can be used with seedplanter to achieve single system DSiWarehax.
+
+    h3 How does all this work?
+    p #[a(href="https://zoogie.github.io/web/34⅕c3") See this] for more information, but to summarize, a value known as the LFCS can be easily obtained by friending a homebrew system which assists in a bruteforce of an encryption key known as movable.sed that we can use to encrypt DSiWare games containing exploits that give us CFW. Seedstarter is used to obtain the LFCS, seedminer is used to bruteforce, and seedhelper is used to help users who can't use seedstarter and/or seedminer to find users who can.
+
+    h3 How do I use this website to get a movable.sed?
+    ol
+        li #[a(href="/register") Create an account.]
+        li Press 'Add Device'.
+        li Specify a name for your device.
+        li If you have a movable_part1 already (see below):
+        ul
+            li Upload your #[code movable_part1] to the website and click Submit.
+            li Occasionally refresh the page (about every 10 minutes) until the link for Movable changes from Unavaliable to Download.
+            li Click Download to obtain your #[code movable.sed].
+        li If you do not:
+        ul
+            li Fill in your friend code and ID0 as instructed then click Submit. If you do not have a dedicated GPU, check the box.
+            li Occasionally refresh the page (about every 10 minutes) until the link for Movable (or Part1 if you have a GPU) changes from Unavaliable to Download.
+            li Click Download to obtain your #[code movable.sed] or #[code movable_part1.sed] if you have a GPU.
+            li If you have a GPU, bruteforce your #[code movable_part1.sed] using the below instructions.
+    
+    h3 How do I dump my own movable_part1?
+    ol
+        li Download #[a(href="https://github.com/zoogie/seedminer/releases/latest") the latest version of seedminer (the zip file)]
+        li Extract the seedminer zip to a folder on your computer.
+        li Copy #[code seedstarter.3dsx] from the seedminer folder to the 3ds folder on your SD card.
+        li Launch seedstarter from the Homebrew Launcher.
+        li Press A to dump LFCS from GetConfigInfoBlk2 (your own).
+        li Press A then Start to exit.
+        li Turn off your 3DS and plug your SD card into your computer.
+        li Move the #[code movable_part1.sed] file with the user's friend code from the #[code seedstarter] folder on your SD card to the #[code seedminer] folder on your computer.
+        li Upload the #[code movable_part1.sed] file with the user's friend code to the website when you are adding your device if you need someone else to bruteforce it, or bruteforce it yourself if you have a dedicated GPU (see below).
+    
+    h3 How do I bruteforce my own movable.sed?
+    ol
+        li Download #[a(href="https://github.com/zoogie/seedminer/releases/latest") the latest version of seedminer (the zip file)]
+        li Download #[a(href="https://www.python.org/downloads/") the latest version of Python 2 (not 3)]
+        li Extract the seedminer zip to a folder on your computer.
+        li Download or find your #[code movable_part1.sed] file and copy it to the #[code seedminer] folder.
+        li Rename the file to #[code movable_part1.sed] if it is not already named that.
+        li Open a command prompt.
+        li Run #[code python seedminer_launcher.py gpu].
+        li Wait for the process to complete. It can take at least 20 minutes and possibly hours depending on the power of your GPU.
+        li Find your #[code movable.sed] file in the #[code seedminer] folder.
+    
+    h3 How do I contribute to seedhelper?
+    p Register an account, click Work on the top bar and follow the instructions provided.
+    
+    h3 What do I need to do with my movable.sed?
+    p Use seedplanter. Instructions are not done yet but it requires Java.

@@ -1,0 +1,37 @@
+include includes/base
+
++base("Edit Device")
+    h1= `Editing ${device.name}`
+    form.pure-form.pure-form-aligned(method="post")
+        fieldset
+            .pure-control-group
+                label(for="name") Name
+                input#name(required type="text" name="name" placeholder="Name" value=(device.name||'New Device'))
+                span.pure-form-message-inline Required. Isn't shared.
+            .pure-control-group
+                label(for="friendCode") Friend Code
+                input#friendCode(type="text" name="friendCode" placeholder="0000-0000-0000" value=(device.friendCode||''))
+                span.pure-form-message-inline Required if you do not have movable_part1 already. This will be shared with the user who retrieves your movable_part1. Use the friend code of this device. Include the dashes (so like 0000-0000-0000).
+
+            .pure-control-group
+                label(for="id0") ID0
+                input#name(type="text" name="id0" placeholder="ID0" value=(device.id0||''))
+                span.pure-form-message-inline Required if you do not have movable_part1 already. This will be shared with the user who retrieves your movable_part1. This is the name of the folder inside the Nintendo 3DS folder on your SD card.
+
+            if device.p1 != 'true'
+                .pure-control-group
+                    label(for="p1") Movable_part1
+                    input#name(type="file" name="p1")
+                    span.pure-form-message-inline Specify this if you have already extracted this from the homebrew launcher and just need movable.sed bruteforcing to inject dsiwarehax. #[a(href="#" target="_blank") Have homebrew but no CFW? Here's how to extract movable_part1.sed.] Will be shared with the person who bruteforces your movable.sed.
+                
+                .pure-controls
+                    input#autoMovable(name="autoMovable" type="checkbox")
+                    label(for="autoMovable") Automatically submit my movable_part1 for bruteforcing once it is calculated. Check this if you do not have a GPU and haven't specified a movable_part1 already. If you say no then come back to this page to submit it.
+
+            else if device.autoMovable != 'false'
+                .pure-controls
+                    Submit this form to submit your movable_part1 for bruteforcing.
+                
+            .pure-controls
+                button.pure-button.pure-button-primary(type="submit") Submit
+                a.pure-button(href="/home") Cancel

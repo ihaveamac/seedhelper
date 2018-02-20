@@ -1,0 +1,45 @@
+include includes/base
+
++base("Work")
+    h1 Lend your devices to Seedhelper
+    p Seedhelper is made possible by the users who volunteer their time, CFW devices and GPUs to help people get CFW. Learn how you can help.
+    .pure-g
+        .pure-u-1-2
+            h2 Retrieve Part1
+            p The first part of the seedminer process involves retrieving a LocalFriendCodeSeed which can be used to create the first part of movable.sed (movable_part1). This is done with the seedstarter 3dsx or cia and thus requires a homebrew or CFW exploit.
+            h3 Instructions
+            ol
+                b First time setup
+                li Download #[a(href="https://github.com/zoogie/seedminer/releases/latest") the latest version of seedminer (the zip file)]
+                li Extract the seedminer zip to a folder on your computer.
+                li Copy #[code seedstarter.3dsx] from the seedminer folder to the 3ds folder on your SD card.
+                b For each user
+                li Click the 'Start working' button below to request a user to work on.
+                li Open the Friends List on your device and add their friend code.
+                li Wait for the user to add you back. You will recieve a message when they have if you stay in the Friends List. Do not continue until this happens.
+                li Launch seedstarter from the Homebrew Launcher.
+                li Press B to dump seeds from the friend list.
+                li Turn off your 3DS and plug your SD card into your computer.
+                li Upload the #[code _part1.sed] file with the user's friend code in the #[code seedstarter] folder on the 3DS SD card to the website.
+                li Delete all files from the #[code seedstarter] folder on your SD card to make things easier for the next time.
+                li Feel free to delete the friend from your Friend List.
+                p Note that injecting the id0 with #[seedminer_launcher.py] is not required as this is done automatically by the server.
+            a.pure-button.pure-button-primary(href="/work/part1s") Start working
+        .pure-u-1-2
+            h2 Retrieve Movable.sed
+            p The second part of the seedminer process involves using #[code movable_part1.sed] to bruteforce #[code movable.sed] which can be used to decrypt, inject and encrypt DSiWare games with seedplanter. This is done with seedminer and requires a dedicated GPU for decent performance.
+            h3 Instructions
+            ol
+                b First time setup
+                li Download #[a(href="https://github.com/zoogie/seedminer/releases/latest") the latest version of seedminer (the zip file)]
+                li Download #[a(href="https://www.python.org/downloads/") the latest version of Python 2 (not 3)]
+                li Extract the seedminer zip to a folder on your computer.
+                b For each user
+                li Click the 'Start working' button below to request a user to work on.
+                li Download the file provided to your computer and copy it to the #[code seedminer] folder.
+                li Rename the file to #[code movable_part1.sed].
+                li Open a command prompt.
+                li Run #[code python seedminer_launcher.py gpu].
+                li Upload #[code movable.sed] to the website once complete.
+                li Delete #[code movable_part1.sed] and #[code movable.sed] from the #[code seedminer] folder on your computer.
+            a.pure-button.pure-button-primary(href="/work/movables") Start working

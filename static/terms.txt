@@ -1,0 +1,24 @@
+TERMS AND PRIVACY POLICY
+------------------------
+By using Seedhelper (the Website) you (the User) agree to these terms.
+
+Definitions:
+Website: this service, https://seedplanter.figgyc.uk
+Users: people with an account on the Website, including you
+User: you
+figgyc: maintainer of the website (<seedplanter at figgyc dot uk>)
+Workers: people with an account on the Website who use the Work page to request data of other users and provide derivative data back to the Website
+the Work page: https://seedplanter.figgyc.uk/work
+Terms:
+A: Basic terms
+    1. By using the Website you agree that all data that you enter will be stored unless you request to delete it using the buttons provided on the Website.
+    2. By using the Website you agree that some data you enter will be shared with Workers as is stated on the forms on the Website in which you enter this data.
+    3. By using the Website you agree that figgyc does not take responsibility for anything that Workers do with your data that is provided to them.
+    4. figgyc provides no guarantee that any data held by the Website will remain permenantly avaliable and thus you are advised to download any data that you require.
+B: Workers
+    1. By using the blue buttons on the Work page to request other user's data, you agree to make your best effort to provide the derivative data requested (movable_part1.sed or movable.sed) accurately and within a reasonable time span. While failing to do this occasionally is acceptable, repeatedly failing to provide the derivative data requested or providing incorrect data may result in your account being terminated.
+    1. By uploading data to the various work pages of this website, you agree that the User who requested this data to be created has full rights to do whatever they wish with the data.
+C: Termination
+    1. You can terminate your own account by pressing a button on the Website or by emailing seedplanter at figgyc dot uk if you are unable to do this.
+    2. Your account may be terminated without notice at figgyc's discretion for any reason, including but not limited to abuse of the service and repeated failure to provide data as explained in B1.
+    3. When your account is terminated, all data will be deleted and their will be no way to get it back.

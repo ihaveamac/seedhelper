@@ -1,0 +1,8 @@
+seedhelper.figgyc.uk, localhost:80, https://localhost:443
+
+tls {
+    dns cloudflare
+}
+
+gzip
+proxy / localhost:3000
