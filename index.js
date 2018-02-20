@@ -184,10 +184,8 @@ app.post('/device/:deviceid/edit', enforceLogin, upload.fields([{
     redisClient.hgetall(`device:${req.params.deviceid}`, (err, oldDevice) => {
         if (err) {
             req.flash('error', 'Redis error 1. Please try again and report this issue if you see it again.')
-            console.log(err)
             return res.redirect(`/device/${req.params.deviceid}/edit`)
         }
-        console.log(req.files, !oldDevice.p1) 
         if (!req.files && !oldDevice.p1) {
             if (!req.body.id0 || !req.body.friendCode) {
                 req.flash('error', 'You must specify id0 and a friend code.')
@@ -224,7 +222,7 @@ app.post('/device/:deviceid/edit', enforceLogin, upload.fields([{
                 req.flash('error', 'File is not a valid movable_part1.')
                 return res.redirect(`/device/${req.params.deviceid}/edit`)
             }
-            device.id0 = req.files.p1[0].buffer.toString('utf8', 0x10, 0x20)
+            device.id0 = req.files.p1[0].buffer.slice(0x10, 0x30).toString('utf8')
             if (req.files.p1[0].buffer.readUIntBE(0, 4) == 0 || device.id0 == '\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000') {
                 req.flash('error', 'Your movable_part1 appears to be blank. Did you dump this file yourself? If not, then don\'t specify a file and enter your friend code and id0 instead.')
                 return res.redirect(`/work/part1/${req.params.deviceid}/edit`)
@@ -513,7 +511,7 @@ app.post('/work/part1/:deviceid', enforceLogin, upload.fields([{
                 req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
                 return res.redirect(`/work/part1/${req.params.deviceid}`)
             }
-            req.files.p1[0].buffer.write(device.id0.toLowerCase(), 0x10)
+            req.files.p1[0].buffer.write(device.id0.toLowerCase(), 0x10, 0x40)
             if (req.files.p1[0].buffer.readUIntBE(0, 4) == 0) {
                 req.flash('error', 'Your movable_part1 appears to be blank. Did you wait for the user to add you back? Please try again.')
                 return res.redirect(`/work/part1/${req.params.deviceid}`)
@@ -525,7 +523,6 @@ app.post('/work/part1/:deviceid', enforceLogin, upload.fields([{
                 }
                 redisClient.srem('workingDevices', req.params.deviceid, (err, result) => {
                     if (err) {
-                        console.log(err)
                         req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
                         return res.redirect(`/work/part1/${req.params.deviceid}`)
                     }
@@ -617,7 +614,6 @@ app.post('/work/movable/:deviceid', enforceLogin, upload.fields([{
         let hash = crypto.createHash('sha256')
         hash.end(toShaBuf)
         let hashBuf = hash.read(16)
-        console.log(hashBuf.length)
         let part1 = hashBuf.slice(0,4).swap32()
         let part2 = hashBuf.slice(4,8).swap32()
         let part3 = hashBuf.slice(8,12).swap32()
@@ -628,7 +624,7 @@ app.post('/work/movable/:deviceid', enforceLogin, upload.fields([{
                 req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
                 return res.redirect(`/work/movable/${req.params.deviceid}`)
             }
-            if (device.id0 != id0) {
+            if (device.id0 !== id0) {
                 req.flash('error', 'Movable.sed is invalid for this device.')
                 return res.redirect(`/work/movable/${req.params.deviceid}`)
             }

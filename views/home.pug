@@ -4,52 +4,61 @@ include includes/base
     h1 Devices
     a.pure-button.pure-button-primary(href="/add") Add Device
     a.pure-button(href="/deleteaccount") Delete account (no way to reverse!)
-    table.pure-table
-        thead
-            tr
-                th Name
-                th FC
-                th Part1
-                th Movable
-                th Worker FC
-                th ID0
-                th Error
-                th Delete
-                th Edit
-        each device in devices
-            tbody
+    br
+    br
+    if (Array.isArray(devices) && devices.length)
+        table.pure-table
+            thead
                 tr
-                    td= device.name
-                    td= device.friendCode
-                    td
-                        if device.p1 == 'true'
-                            a(href=`/static/ugc/part1/${device.id}_part1.sed`) Download
-                        else
-                            span Unavaliable
-                    td
-                        if device.movable == 'true'
-                            a(href=`/static/ugc/movable/${device.id}_movable.sed`) Download
-                        else
-                            span Unavaliable
-                    td
-                        if device.workerFriendCode
-                            span= device.workerFriendCode
-                        else
-                            span N/A
-                    td
-                        if device.id0
-                            span= device.id0
-                        else
-                            span N/A
-                    td
-                        if device.error
-                            span= device.error
-                        else
-                            span No
-                    td
-                        a(href=`/device/${device.id}/delete`) Delete
-                    td
-                        if (device.p1 == true && device.movable == true)
-                            span Finished
-                        else
-                            a(href=`/device/${device.id}/edit`) Edit
+                    th Name
+                    th FC
+                    th Part1
+                    th Movable
+                    th Worker FC
+                    th ID0
+                    th Error
+                    th Delete
+                    th Edit
+            each device in devices
+                tbody
+                    tr
+                        td= device.name
+                        td
+                            if device.friendCode
+                                span= device.friendCode
+                            else
+                                span N/A
+                        td
+                            if device.p1 == 'true'
+                                a(href=`/static/ugc/part1/${device.id}_part1.sed`) Download
+                            else
+                                span Unavaliable
+                        td
+                            if device.movable == 'true'
+                                a(href=`/static/ugc/movable/${device.id}_movable.sed`) Download
+                            else
+                                span Unavaliable
+                        td
+                            if device.workerFriendCode
+                                span= device.workerFriendCode
+                            else
+                                span N/A
+                        td
+                            if device.id0
+                                span= device.id0
+                            else
+                                span N/A
+                        td
+                            if device.error
+                                span= device.error
+                            else
+                                span No
+                        td
+                            a(href=`/device/${device.id}/delete`) Delete
+                        td
+                            if (device.p1 == true && device.movable == true)
+                                span Finished
+                            else
+                                a(href=`/device/${device.id}/edit`) Edit
+    else
+        p You haven't added any devices.
