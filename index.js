@@ -6,6 +6,7 @@ const session = require('express-session')
 const uuid = require('uuid/v4')
 const async = require('async')
 const bcrypt = require('bcrypt')
+const crypto = require('crypto')
 const fs = require('fs')
 
 const passport = require('passport')
@@ -186,7 +187,7 @@ app.post('/device/:deviceid/edit', enforceLogin, upload.fields([{
             console.log(err)
             return res.redirect(`/device/${req.params.deviceid}/edit`)
         }
-    
+        console.log(req.files, !oldDevice.p1) 
         if (!req.files && !oldDevice.p1) {
             if (!req.body.id0 || !req.body.friendCode) {
                 req.flash('error', 'You must specify id0 and a friend code.')
@@ -222,6 +223,11 @@ app.post('/device/:deviceid/edit', enforceLogin, upload.fields([{
             if (req.files.p1[0].size != 4096) {
                 req.flash('error', 'File is not a valid movable_part1.')
                 return res.redirect(`/device/${req.params.deviceid}/edit`)
+            }
+            device.id0 = req.files.p1[0].buffer.toString('utf8', 0x10, 0x20)
+            if (req.files.p1[0].buffer.readUIntBE(0, 4) == 0 || device.id0 == '\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000') {
+                req.flash('error', 'Your movable_part1 appears to be blank. Did you dump this file yourself? If not, then don\'t specify a file and enter your friend code and id0 instead.')
+                return res.redirect(`/work/part1/${req.params.deviceid}/edit`)
             }
             device.p1 = true
             fs.writeFile(`static/ugc/part1/${req.params.deviceid}_part1.sed`, req.files.p1[0].buffer, (err) => {
@@ -266,15 +272,15 @@ function deleteDevice(user, deviceid) {
         if (err) {
             return {'error': 'Redis error. Please try again and report this issue if you see it again.'}
         }
-        redisClient.srem(`devices:${user}`, req.params.deviceid, (err, result) => {
+        redisClient.srem(`devices:${user}`, deviceid, (err, result) => {
             if (err) {
                 return {'error': 'Redis error. Please try again and report this issue if you see it again.'}
             }
-            redisClient.srem(`p1NeededDevices`, req.params.deviceid, (err, result) => {
+            redisClient.srem(`p1NeededDevices`, deviceid, (err, result) => {
                 if (err) {
                     return {'error': 'Redis error. Please try again and report this issue if you see it again.'}
                 }
-                redisClient.srem(`movableNeededDevices`, req.params.deviceid, (err, result) => {
+                redisClient.srem(`movableNeededDevices`, deviceid, (err, result) => {
                     if (err) {
                         return {'error': 'Redis error. Please try again and report this issue if you see it again.'}
                     }
@@ -606,15 +612,30 @@ app.post('/work/movable/:deviceid', enforceLogin, upload.fields([{
             req.flash('error', 'File is not a valid movable.')
             return res.redirect(`/work/movable/${req.params.deviceid}`)
         }
+        let toShaBuf = req.files.movable[0].buffer.slice(0x110, 0x120)
+        //toShaBuf.swap16()
+        let hash = crypto.createHash('sha256')
+        hash.end(toShaBuf)
+        let hashBuf = hash.read(16)
+        console.log(hashBuf.length)
+        let part1 = hashBuf.slice(0,4).swap32()
+        let part2 = hashBuf.slice(4,8).swap32()
+        let part3 = hashBuf.slice(8,12).swap32()
+        let part4 = hashBuf.slice(12,16).swap32()
+        let id0 = part1.toString('hex') + part2.toString('hex') + part3.toString('hex') + part4.toString('hex')
         redisClient.hgetall(`device:${req.params.deviceid}`, (err, device) => {
             if (err) {
                 req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
                 return res.redirect(`/work/movable/${req.params.deviceid}`)
             }
+            if (device.id0 != id0) {
+                req.flash('error', 'Movable.sed is invalid for this device.')
+                return res.redirect(`/work/movable/${req.params.deviceid}`)
+            }
             fs.writeFile(`static/ugc/movable/${req.params.deviceid}_movable.sed`, req.files.movable[0].buffer, (err) => {
                 if (err) {
                     req.flash('error', 'File upload error. Please try again and report this issue if you see it again.')
-                    return res.redirect(`/device/${req.params.deviceid}/edit`)
+                    return res.redirect(`/work/movable/${req.params.deviceid}`)
                 }
                 redisClient.srem('workingDevices', req.params.deviceid, (err, result) => {
                     if (err) {
@@ -635,6 +656,51 @@ app.post('/work/movable/:deviceid', enforceLogin, upload.fields([{
         })
     }
 })
+
+// automatically repool dead tasks
+setInterval(() => {
+    redisClient.smembers('workingDevices', (err, deviceids) => {
+        if (err) {
+            console.log('error', 'Redis error. Please try again and report this issue if you see it again.')
+        }
+        async.forEach(deviceids, (deviceid, callback) => {
+            redisClient.hgetall(`device:${deviceid}`, (err, device) => {
+                if (err) {
+                    console.log('error', 'Redis error. Please try again and report this issue if you see it again.')
+                }
+                if (device.workStartTime + 7200000 < Date.now()) {
+                    console.log(`Worker ${device.worker} is taking too long, repooling...`)
+                }
+                redisClient.srem('workingDevices', deviceid, (err, result) => {
+                    if (err) {
+                        console.log('error', 'Redis error. Please try again and report this issue if you see it again.')
+                    }
+                    if (!device.p1) {
+                        redisClient.sadd('p1NeededDevices', deviceid, (err, result) => {
+                        if (err) {
+                            console.log('error', 'Redis error. Please try again and report this issue if you see it again.')
+                        }
+                        })
+                    } else if (!device.movable) {
+                        redisClient.sadd('movableNeededDevices', deviceid, (err, result) => {
+                        if (err) {
+                            console.log('error', 'Redis error. Please try again and report this issue if you see it again.')
+                        }
+                        })
+                    } else {
+                        console.log(`Actually ${device.worker} just got assigned a finished device.`)
+                    }
+                })
+                
+            })
+        }, err => {
+            if (err) {
+                console.log('error', 'Looping error. Please try again and report this issue if you see it again.')
+            }
+        })
+    })
+
+}, 1200000) // 20 mins
 
 
 app.listen(process.env.PORT | 3000, () => console.log('App is listening'))

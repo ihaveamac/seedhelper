@@ -21,4 +21,4 @@ B: Workers
 C: Termination
     1. You can terminate your own account by pressing a button on the Website or by emailing seedplanter at figgyc dot uk if you are unable to do this.
     2. Your account may be terminated without notice at figgyc's discretion for any reason, including but not limited to abuse of the service and repeated failure to provide data as explained in B1.
-    3. When your account is terminated, all data will be deleted and their will be no way to get it back.
+    3. When your account is terminated, all data will be deleted and there will be no way to get it back.

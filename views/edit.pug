@@ -2,7 +2,7 @@ include includes/base
 
 +base("Edit Device")
     h1= `Editing ${device.name}`
-    form.pure-form.pure-form-aligned(method="post")
+    form.pure-form.pure-form-aligned(method="post" enctype="multipart/form-data")
         fieldset
             .pure-control-group
                 label(for="name") Name
@@ -16,7 +16,7 @@ include includes/base
             .pure-control-group
                 label(for="id0") ID0
                 input#name(type="text" name="id0" placeholder="ID0" value=(device.id0||''))
-                span.pure-form-message-inline Required if you do not have movable_part1 already. This will be shared with the user who retrieves your movable_part1. This is the name of the folder inside the Nintendo 3DS folder on your SD card.
+                span.pure-form-message-inline Required if you are not providing a movable_part1. This will be shared with the user who retrieves your movable_part1 and is also used by the server to verify if the movable.sed is valid. This is the name of the folder inside the Nintendo 3DS folder on your SD card.
 
             if device.p1 != 'true'
                 .pure-control-group
