@@ -24,7 +24,7 @@ include includes/base
             li Fill in your friend code and ID0 as instructed then click Submit. If you do not have a dedicated GPU, check the box.
             li Occasionally refresh the page (about every 10 minutes) until the link for Movable (or Part1 if you have a GPU) changes from Unavaliable to Download.
             li Click Download to obtain your #[code movable.sed] or #[code movable_part1.sed] if you have a GPU.
-            li If you have a GPU, bruteforce your #[code movable_part1.sed] using the below instructions.
+            li If you have a GPU, bruteforce your #[code movable.sed] using the below instructions.
     
     h3 How do I dump my own movable_part1?
     ol
@@ -32,11 +32,12 @@ include includes/base
         li Extract the seedminer zip to a folder on your computer.
         li Copy #[code seedstarter.3dsx] from the seedminer folder to the 3ds folder on your SD card.
         li Launch seedstarter from the Homebrew Launcher.
-        li Press A to dump LFCS from GetConfigInfoBlk2 (your own).
+        li Press A to dump LFCS from GetConfigInfoBlk2.
         li Press A then Start to exit.
         li Turn off your 3DS and plug your SD card into your computer.
         li Move the #[code movable_part1.sed] file with the user's friend code from the #[code seedstarter] folder on your SD card to the #[code seedminer] folder on your computer.
-        li Upload the #[code movable_part1.sed] file with the user's friend code to the website when you are adding your device if you need someone else to bruteforce it, or bruteforce it yourself if you have a dedicated GPU (see below).
+        li Open the Nintendo 3DS folder on your SD card and copy the name of the folder inside it. This is your id0.
+        li Upload the #[code movable_part1.sed] file to the website when you are adding your device and specify your ID0 or bruteforce it yourself (see below).
     
     h3 How do I bruteforce my own movable.sed?
     ol
@@ -45,7 +46,7 @@ include includes/base
         li Extract the seedminer zip to a folder on your computer.
         li Download or find your #[code movable_part1.sed] file and copy it to the #[code seedminer] folder.
         li Rename the file to #[code movable_part1.sed] if it is not already named that.
-        li Open a command prompt.
+        li Open a command prompt in the seedminer folder by shift-right clicking inside it and clicking 'Open command window here' or 'Open PowerShell window here'.
         li Run #[code python seedminer_launcher.py gpu].
         li Wait for the process to complete. It can take at least 20 minutes and possibly hours depending on the power of your GPU.
         li Find your #[code movable.sed] file in the #[code seedminer] folder.

@@ -232,9 +232,16 @@ app.post('/device/:deviceid/edit', enforceLogin, upload.fields([{
                 return res.redirect(`/device/${req.params.deviceid}/edit`)
             }
             device.id0 = req.files.p1[0].buffer.slice(0x10, 0x30).toString('utf8')
-            if (req.files.p1[0].buffer.readUIntBE(0, 4) == 0 || device.id0 == '\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000') {
+            if (req.files.p1[0].buffer.readUIntBE(0, 4) == 0) {
                 req.flash('error', 'Your movable_part1 appears to be blank. Did you dump this file yourself? If not, then don\'t specify a file and enter your friend code and id0 instead.')
                 return res.redirect(`/work/part1/${req.params.deviceid}/edit`)
+            }
+            if (device.id0 == '\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000') {
+                if(!req.body.id0) {
+                    req.flash('error', 'You need to specify ID0 or embed it into your movable_part1.sed.')
+                } else {
+                    device.id0 = req.body.id0
+                }
             }
             device.p1 = true
             fs.writeFile(`static/ugc/part1/${req.params.deviceid}_part1.sed`, req.files.p1[0].buffer, (err) => {
