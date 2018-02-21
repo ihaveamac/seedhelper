@@ -203,7 +203,7 @@ app.post('/device/:deviceid/edit', enforceLogin, upload.fields([{
             req.flash('error', "You can't edit other people's devices.")
             return res.redirect(`/home`)
         }
-        if (!req.files.length && !oldDevice.p1) {
+        if (!Object.keys(req.files).length && !oldDevice.p1) {
             if (!req.body.id0 || !req.body.friendCode) {
                 req.flash('error', 'You must specify id0 and a friend code.')
                 return res.redirect(`/device/${req.params.deviceid}/edit`)
@@ -544,7 +544,7 @@ app.post('/work/part1/:deviceid', enforceLogin, upload.fields([{
     name: 'p1',
     maxCount: 1
 }]), (req, res) => {
-    if (!req.files.length) {
+    if (!Object.keys(req.files).length) {
         req.flash('error', 'You must upload a file.')
         return res.redirect(`/work/part1/${req.params.deviceid}`)
     } else {
@@ -694,7 +694,7 @@ app.post('/work/movable/:deviceid', enforceLogin, upload.fields([{
     name: 'movable',
     maxCount: 1
 }]), (req, res) => {
-    if (!req.files.length) {
+    if (!Object.keys(req.files).length) {
         req.flash('error', 'You must upload a file.')
         return res.redirect(`/work/movable/${req.params.deviceid}`)
     } else {
@@ -721,7 +721,7 @@ app.post('/work/movable/:deviceid', enforceLogin, upload.fields([{
                 req.flash('error', "You haven't been assigned to work on this device.")
                 return res.redirect('/work')
             }
-            if (device.id0 !== id0) {
+            if (device.id0 != id0) {
                 req.flash('error', 'Movable.sed is invalid for this device.')
                 return res.redirect(`/work/movable/${req.params.deviceid}`)
             }
@@ -754,30 +754,30 @@ app.post('/work/movable/:deviceid', enforceLogin, upload.fields([{
 setInterval(() => {
     redisClient.smembers('workingDevices', (err, deviceids) => {
         if (err) {
-            console.log('error', 'Redis error. Please try again and report this issue if you see it again.')
+            console.log('Redis error in timer task')
         }
         async.forEach(deviceids, (deviceid, callback) => {
             redisClient.hgetall(`device:${deviceid}`, (err, device) => {
                 if (err) {
-                    console.log('error', 'Redis error. Please try again and report this issue if you see it again.')
+                    console.log('Redis error in timer task')
                 }
                 if (device.workStartTime + 7200000 < Date.now()) { // 2 hours
                     console.log(`Worker ${device.worker} is taking too long, repooling...`)
                 }
                 redisClient.srem('workingDevices', deviceid, (err, result) => {
                     if (err) {
-                        console.log('error', 'Redis error. Please try again and report this issue if you see it again.')
+                        console.log('Redis error in timer task')
                     }
                     if (!device.p1) {
                         redisClient.sadd('p1NeededDevices', deviceid, (err, result) => {
                         if (err) {
-                            console.log('error', 'Redis error. Please try again and report this issue if you see it again.')
+                            console.log('Redis error in timer task')
                         }
                         })
                     } else if (!device.movable) {
                         redisClient.sadd('movableNeededDevices', deviceid, (err, result) => {
                         if (err) {
-                            console.log('error', 'Redis error. Please try again and report this issue if you see it again.')
+                            console.log('Redis error in timer task')
                         }
                         })
                     } else {
@@ -788,7 +788,7 @@ setInterval(() => {
             })
         }, err => {
             if (err) {
-                console.log('error', 'Looping error. Please try again and report this issue if you see it again.')
+                console.log('Looping error in timer task')
             }
         })
     })
@@ -798,8 +798,7 @@ setInterval(() => {
 // error handler
 // 404
 app.use((req, res, next) => {
-    console.log(404)
-    res.status(404).render('error', {error: 'That page does not exist'})
+    res.status(404).render('error', {error: 'That page does not exist.'})
 })
 // everything else
 app.use((err, req, res, next) => {
