@@ -4,27 +4,16 @@ s = requests.Session()
 baseurl = "https://seedhelper.figgyc.uk"
 currentid = ""
 
-def login():
-    username = input("Username: ")
-    password = getpass.getpass("Password: ")
-    print("Logging in...")
-    r = s.post(baseurl + "/login", data={'username': username, 'password': password})
-    if response.cookies.get('connect.sid'):
-        print("Login successful")
-    else:
-        print("Login fail")
-        sys.exit(0)
-
-if os.path.isfile("autolauncher_cookies"):
-    s.cookies = cookielib.FileCookieJar("autolauncher_cookies")
-    # Check if session is still valid
-    r = s.get(baseurl)
-    if response.cookies.get('connect.sid'):
-        print("Session still valid")
-    else:
-        login()
+username = raw_input("Username: ")
+password = getpass.getpass("Password: ")
+print("Logging in...")
+r = s.post(baseurl + "/login", data={'username': username, 'password': password})
+print(r.url)
+if r.url == baseurl + '/home':
+    print("Login successful")
 else:
-    login()
+    print("Login fail")
+    sys.exit(0)
 
 def signal_handler(signal, frame):
         print('Exiting...')
@@ -45,17 +34,17 @@ def download_file(url, local_filename):
 
 while True:
     print("Finding work...")
-    r = s.get(baseurl + "/movables", allow_redirects=False)
-    if r.headers['Location'] == "/work":
+    r = s.get(baseurl + "/work/movables")
+    if r.url == baseurl + "/work":
         print("No work. Waiting 5 minutes...")
         time.sleep(300)
     else:
-        regex = re.compile(r"/work/movable/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})")
-        currentid = regex.findall(r.headers['Location'])[0]
+        regex = re.compile(r".*/work/movable/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})")
+        currentid = regex.findall(r.url)[0]
         print("Downloading part1 for device " + currentid)
         download_file(baseurl + '/static/ugc/part1/' + currentid + '_part1.sed', 'movable_part1.sed')
         print("Bruteforcing")
-        os.system("python2 seedminer_launcher.py gpu")
+        os.system(sys.executable + " seedminer_launcher.py gpu")
         if os.path.isfile("movable.sed"):
             print("Uploading")
             ur = s.post(r.headers['Location'], files={'file': open('movable.sed', 'rb')})

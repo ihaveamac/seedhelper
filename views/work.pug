@@ -3,6 +3,34 @@ include includes/base
 +base("Work")
     h1 Lend your devices to Seedhelper
     p Seedhelper is made possible by the users who volunteer their time, CFW devices and GPUs to help people get CFW. Learn how you can help. #[b Note: You can middle-click the buttons to open the work in a new tab and work on multiple tasks at once.]
+    p= `You have ${workPoints || 0} work points.`
+    if (Array.isArray(devices) && devices.length)
+        table.pure-table
+            thead
+                tr
+                    th ID
+                    th Type
+                    th Link
+                    th Cancel
+            each device in devices
+                tbody
+                    tr
+                        td= device.id
+                        if device.p1
+                            td Movable
+                            td
+                                a(href=`/work/movable/${device.id}`) Work on this
+                        else
+                            td Part1
+                            td
+                                a(href=`/work/part1/${device.id}`) Work on this
+                        if device.p1
+                            td
+                                a(href=`/work/movable/${device.id}/cancel`) Cancel
+                        else
+                            td
+                                a(href=`/work/part1/${device.id}/cancel`) Cancel
+
     .pure-g
         .pure-u-1-2
             h2 Retrieve Part1
@@ -37,6 +65,8 @@ include includes/base
                 li Download #[a(href="/static/seedminer_autolauncher.py") #[code seedminer_autolauncher.py]]
                 li Extract the seedminer zip to a folder on your computer.
                 li Copy #[code seedminer_autolauncher.py] to the seedminer folder.
+                li Open a command prompt by pressing Windows+R, typing #[code cmd] and pressing Ctrl+Shift+Enter.
+                li Run #[code pip install requests].
                 b When you want to help
                 li Open a command prompt in the seedminer folder by shift-right clicking inside it and clicking 'Open command window here' or 'Open PowerShell window here'.
                 li Run #[code python seedminer_autolauncher.py].

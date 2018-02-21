@@ -275,6 +275,10 @@ app.post('/device/:deviceid/edit', enforceLogin, upload.fields([{
                     device.id0 = req.body.id0
                 }
             }
+            if (!id0Regex.test(device.id0)) {
+                req.flash('error', 'Your ID0 or movable_part1 is invalid.')
+                return res.redirect(`/work/part1/${req.params.deviceid}/edit`)
+            }
             device.p1 = true
             fs.writeFile(`static/ugc/part1/${req.params.deviceid}_part1.sed`, req.files.p1[0].buffer, (err) => {
                 if (err) {
@@ -314,11 +318,11 @@ app.post('/device/:deviceid/edit', enforceLogin, upload.fields([{
 //this is broken out so it can also be used in deleteaccount
 
 function deleteDevice(user, deviceid) {
-    redisClient.hget(`device:${deviceid}`, 'owner', (err, owner) => {
+    redisClient.hgetall(`device:${deviceid}`, (err, device) => {
         if (err) {
             return {'error': 'Redis error. Please try again and report this issue if you see it again.'}
         }
-        if (owner != user) {
+        if (device.owner != user) {
             return {'error': "You can't delete other people's devices."}
         }
         redisClient.del(`device:${deviceid}`, (err, result) => {
@@ -341,15 +345,32 @@ function deleteDevice(user, deviceid) {
                             if (err) {
                                 return {'error': 'Redis error. Please try again and report this issue if you see it again.'}
                             }
-                            fs.unlink(`static/ugc/movable/${deviceid}_movable.sed`, (err) => {
-                                if (err && err != "ENOENT") { // file not found
+                            if (device.worker) {
+                                redisClient.srem(`workingDevices:${device.worker}`, deviceid, (err, result) => {
+                                    if (err) {
+                                        return {'error': 'Redis error. Please try again and report this issue if you see it again.'}
+                                    }
                                     fs.unlink(`static/ugc/movable/${deviceid}_movable.sed`, (err) => {
                                         if (err && err != "ENOENT") { // file not found
-                                            // success, no return
+                                            fs.unlink(`static/ugc/part1/${deviceid}_part1.sed`, (err) => {
+                                                if (err && err != "ENOENT") { // file not found
+                                                    // success, no return
+                                                }
+                                            })
                                         }
                                     })
-                                }
-                            })
+                                })
+                            } else {
+                                fs.unlink(`static/ugc/movable/${deviceid}_movable.sed`, (err) => {
+                                    if (err && err != "ENOENT") { // file not found
+                                        fs.unlink(`static/ugc/part1/${deviceid}_part1.sed`, (err) => {
+                                            if (err && err != "ENOENT") { // file not found
+                                                // success, no return
+                                            }
+                                        })
+                                    }
+                                })
+                            }
                         })
                     })
                 })
@@ -500,9 +521,34 @@ app.get('/logout', (req, res) => {
 // work
 
 app.get('/work', enforceLogin, (req, res) => {
-    res.render('work', {
-        user: req.user
+    let array = []
+    redisClient.smembers(`workingDevices:${req.user}`, (err, deviceids) => {
+        if (err) {
+            req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
+            return res.redirect('/')
+        }
+        async.forEach(deviceids, (deviceid, callback) => {
+            redisClient.hgetall(`device:${deviceid}`, (err, device) => {
+                if (err) {
+                    req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
+                    return res.redirect('/')
+                }
+                device.id = deviceid
+                array.push(device)
+                callback()
+            })
+        }, err => {
+            if (err) {
+                req.flash('error', 'Looping error. Please try again and report this issue if you see it again.')
+                return res.redirect('/')
+            }
+            res.render('work', {
+                devices: array,
+                user: req.user
+            })
+        })
     })
+
 })
 
 app.get('/work/part1s', enforceLogin, (req, res) => {
@@ -534,7 +580,13 @@ app.get('/work/part1s', enforceLogin, (req, res) => {
                         req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
                         return res.redirect('/work')
                     }
-                    res.redirect(`/work/part1/${deviceid}`)
+                    redisClient.sadd(`workingDevices:${req.user}`, deviceid, (err, result) => {
+                        if (err) {
+                            req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
+                            return res.redirect('/work')
+                        }
+                        res.redirect(`/work/part1/${deviceid}`)
+                    })
                 })
             })
         })
@@ -604,26 +656,30 @@ app.post('/work/part1/:deviceid', enforceLogin, upload.fields([{
                         req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
                         return res.redirect(`/work/part1/${req.params.deviceid}`)
                     }
-                    redisClient.hset(`device:${req.params.deviceid}`, 'p1', true, (err, result) => {
+                    redisClient.srem(`workingDevices:${req.user}`, req.params.deviceid, (err, result) => {
                         if (err) {
                             req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
                             return res.redirect(`/work/part1/${req.params.deviceid}`)
                         }
-                        if (device.autoMovable == 'on') {
-                            redisClient.sadd('movableNeededDevices', req.params.deviceid, (err, result) => {
-                                if (err) {
-                                    req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
-                                    return res.redirect(`/work/part1/${req.params.deviceid}`)
-                                }
+                        redisClient.hset(`device:${req.params.deviceid}`, 'p1', true, (err, result) => {
+                            if (err) {
+                                req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
+                                return res.redirect(`/work/part1/${req.params.deviceid}`)
+                            }
+                            if (device.autoMovable == 'on') {
+                                redisClient.sadd('movableNeededDevices', req.params.deviceid, (err, result) => {
+                                    if (err) {
+                                        req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
+                                        return res.redirect(`/work/part1/${req.params.deviceid}`)
+                                    }
+                                    req.flash('success', 'Movable_part1 uploaded successfully! Thanks for supporting seedhelper.')
+                                    res.redirect('/work')
+                                })
+                            } else {
                                 req.flash('success', 'Movable_part1 uploaded successfully! Thanks for supporting seedhelper.')
                                 res.redirect('/work')
-                            })
-                            
-                        } else {
-                            req.flash('success', 'Movable_part1 uploaded successfully! Thanks for supporting seedhelper.')
-                            res.redirect('/work')
-                        }
-                        
+                            }
+                        })
                     })
                 })
             })
@@ -650,13 +706,19 @@ app.get('/work/part1/:deviceid/fcinvalid', enforceLogin, (req, res) => {
                 req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
                 return res.redirect(`/work/part1/${req.params.deviceid}`)
             }
-            redisClient.hset(`device:${req.params.deviceid}`, 'error', 'FC Invalid!', (err, result) => {
+            redisClient.srem(`workingDevices:${req.user}`, req.params.deviceid, (err, result) => {
                 if (err) {
                     req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
                     return res.redirect(`/work/part1/${req.params.deviceid}`)
                 }
-                req.flash('success', 'The user has been notified! Thanks for supporting seedhelper.')
-                res.redirect('/work')                
+                redisClient.hset(`device:${req.params.deviceid}`, 'error', 'FC Invalid!', (err, result) => {
+                    if (err) {
+                        req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
+                        return res.redirect(`/work/part1/${req.params.deviceid}`)
+                    }
+                    req.flash('success', 'The user has been notified! Thanks for supporting seedhelper.')
+                    res.redirect('/work')                
+                })
             })
         })
     })
@@ -681,13 +743,21 @@ app.get('/work/part1/:deviceid/cancel', enforceLogin, (req, res) => {
                 req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
                 return res.redirect(`/work/part1/${req.params.deviceid}`)
             }
-            redisClient.sadd('p1NeededDevices', req.params.deviceid, (err, result) => {
+            redisClient.srem(`workingDevices:${req.user}`, req.params.deviceid, (err, result) => {
                 if (err) {
                     req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
                     return res.redirect(`/work/part1/${req.params.deviceid}`)
                 }
-                req.flash('success', 'The work has been canceled! No need to feel bad, at least you didn\'t keep it running.')
-                res.redirect('/work')   
+                redisClient.hdel(`device:${req.params.deviceid}`, 'worker', 'workStartTime', 'workerFriendCode', (err, result) => {
+                    redisClient.sadd('p1NeededDevices', req.params.deviceid, (err, result) => {
+                        if (err) {
+                            req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
+                            return res.redirect(`/work/part1/${req.params.deviceid}`)
+                        }
+                        req.flash('success', 'The work has been canceled! No need to feel bad, at least you didn\'t keep it running.')
+                        res.redirect('/work')   
+                    })     
+                })       
             })
         })
     })
@@ -712,12 +782,18 @@ app.get('/work/movables', enforceLogin, (req, res) => {
                 return res.redirect('/work')
             }
             redisClient.sadd('workingDevices', deviceid, (err, result) => {
-                if (err) {
-                    req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
-                    return res.redirect('/work')
-                }
-                res.redirect(`/work/movable/${deviceid}`)
-            })
+                    if (err) {
+                        req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
+                        return res.redirect('/work')
+                    }
+                    redisClient.sadd(`workingDevices:${req.user}`, deviceid, (err, result) => {
+                        if (err) {
+                            req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
+                            return res.redirect('/work')
+                        }
+                        res.redirect(`/work/movable/${deviceid}`)
+                    })
+                })
         })
     })
 })
@@ -790,15 +866,20 @@ app.post('/work/movable/:deviceid', enforceLogin, upload.fields([{
                         req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
                         return res.redirect(`/work/movable/${req.params.deviceid}`)
                     }
-                    redisClient.hset(`device:${req.params.deviceid}`, 'movable', true, (err, result => {
+                    redisClient.srem(`workingDevices:${req.user}`, req.params.deviceid, (err, result) => {
                         if (err) {
                             req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
                             return res.redirect(`/work/movable/${req.params.deviceid}`)
                         }
-                        req.flash('success', 'Movable uploaded successfully! Thanks for supporting seedhelper.')
-                        res.redirect('/work')
-                    }))
-
+                        redisClient.hset(`device:${req.params.deviceid}`, 'movable', true, (err, result) => {
+                            if (err) {
+                                req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
+                                return res.redirect(`/work/movable/${req.params.deviceid}`)
+                            }
+                            req.flash('success', 'Movable uploaded successfully! Thanks for supporting seedhelper.')
+                            res.redirect('/work')
+                        })
+                    })
                 })
             })
         })
@@ -824,13 +905,21 @@ app.get('/work/movable/:deviceid/cancel', enforceLogin, (req, res) => {
                 req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
                 return res.redirect(`/work/movable/${req.params.deviceid}`)
             }
-            redisClient.sadd('p1NeededDevices', req.params.deviceid, (err, result) => {
+            redisClient.srem(`workingDevices:${req.user}`, req.params.deviceid, (err, result) => {
                 if (err) {
                     req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
                     return res.redirect(`/work/movable/${req.params.deviceid}`)
                 }
-                req.flash('success', 'The work has been canceled! No need to feel bad, at least you didn\'t keep it running.')
-                res.redirect('/work')   
+                redisClient.hdel(`device:${req.params.deviceid}`, 'worker', 'workStartTime', (err, result) => {
+                    redisClient.sadd('movableNeededDevices', req.params.deviceid, (err, result) => {
+                        if (err) {
+                            req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
+                            return res.redirect(`/work/movable/${req.params.deviceid}`)
+                        }
+                        req.flash('success', 'The work has been canceled! No need to feel bad, at least you didn\'t keep it running.')
+                        res.redirect('/work')   
+                    })     
+                })
             })
         })
     })
