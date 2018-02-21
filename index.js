@@ -737,5 +737,16 @@ setInterval(() => {
 
 }, 1200000) // 20 mins
 
+// error handler
+// 404
+app.use((req, res, next) => {
+    console.log(404)
+    res.status(404).render('error', {error: 'That page does not exist'})
+})
+// everything else
+app.use((err, req, res, next) => {
+    res.status(500).render('error', { error: err })
+})
+
 
 app.listen(process.env.PORT | 3000, () => console.log('App is listening'))
