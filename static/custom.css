@@ -42,3 +42,7 @@ textarea {
     width: -webkit-fill-available;
     height: 20em;
 }
+
+.error {
+    color: red;
+}

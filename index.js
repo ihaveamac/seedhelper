@@ -163,6 +163,10 @@ app.get('/device/:deviceid/edit', enforceLogin, (req, res) => {
             req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
             return res.redirect('/home')
         }
+        if(!device) {
+            req.flash('error', "This device doesn't exist.")
+            return res.redirect('/home')
+        }
         if (device.owner != req.user) {
             req.flash('error', "You can't edit other people's devices.")
             return res.redirect(`/home`)
@@ -191,11 +195,15 @@ app.post('/device/:deviceid/edit', enforceLogin, upload.fields([{
             req.flash('error', 'Redis error 1. Please try again and report this issue if you see it again.')
             return res.redirect(`/device/${req.params.deviceid}/edit`)
         }
+        if(!device) {
+            req.flash('error', "This device doesn't exist.")
+            return res.redirect('/home')
+        }
         if (oldDevice.owner != req.user) {
             req.flash('error', "You can't edit other people's devices.")
             return res.redirect(`/home`)
         }
-        if (!req.files && !oldDevice.p1) {
+        if (!req.files.length && !oldDevice.p1) {
             if (!req.body.id0 || !req.body.friendCode) {
                 req.flash('error', 'You must specify id0 and a friend code.')
                 return res.redirect(`/device/${req.params.deviceid}/edit`)
@@ -210,7 +218,7 @@ app.post('/device/:deviceid/edit', enforceLogin, upload.fields([{
                     return res.redirect(`/device/${req.params.deviceid}/edit`)
                 }
                 device.friendCode = req.body.friendCode
-                device.autoMovable = req.body.autoMovable
+                device.autoMovable = req.body.autoMovable || false
                 redisClient.sadd('p1NeededDevices', req.params.deviceid, (err, result) => {
                     if (err) {
                         req.flash('error', 'Redis error 2. Please try again and report this issue if you see it again.')
@@ -515,6 +523,10 @@ app.get('/work/part1/:deviceid', enforceLogin, (req, res) => {
             req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
             return res.redirect('/work')
         }
+        if(!device) {
+            req.flash('error', "This device doesn't exist.")
+            return res.redirect('/work')
+        }
         if(device.worker != req.user) {
             req.flash('error', "You haven't been assigned to work on this device.")
             return res.redirect('/work')
@@ -532,7 +544,7 @@ app.post('/work/part1/:deviceid', enforceLogin, upload.fields([{
     name: 'p1',
     maxCount: 1
 }]), (req, res) => {
-    if (!req.files) {
+    if (!req.files.length) {
         req.flash('error', 'You must upload a file.')
         return res.redirect(`/work/part1/${req.params.deviceid}`)
     } else {
@@ -544,6 +556,10 @@ app.post('/work/part1/:deviceid', enforceLogin, upload.fields([{
             if (err) {
                 req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
                 return res.redirect(`/work/part1/${req.params.deviceid}`)
+            }
+            if(!device) {
+                req.flash('error', "This device doesn't exist.")
+                return res.redirect('/work')
             }
             if(device.worker != req.user) {
                 req.flash('error', "You haven't been assigned to work on this device.")
@@ -591,6 +607,37 @@ app.post('/work/part1/:deviceid', enforceLogin, upload.fields([{
     }
 })
 
+app.get('/work/part1/:deviceid/fcinvalid', enforceLogin, (req, res) => {
+    redisClient.hgetall(`device:${req.params.deviceid}`, (err, device) => {
+        if (err) {
+            req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
+            return res.redirect(`/work/part1/${req.params.deviceid}`)
+        }
+        if(!device) {
+            req.flash('error', "This device doesn't exist.")
+            return res.redirect('/work')
+        }
+        if(device.worker != req.user) {
+            req.flash('error', "You haven't been assigned to work on this device.")
+            return res.redirect('/work')
+        }
+        redisClient.srem('workingDevices', req.params.deviceid, (err, result) => {
+            if (err) {
+                req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
+                return res.redirect(`/work/part1/${req.params.deviceid}`)
+            }
+            redisClient.hset(`device:${req.params.deviceid}`, 'error', 'FC Invalid!', (err, result) => {
+                if (err) {
+                    req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
+                    return res.redirect(`/work/part1/${req.params.deviceid}`)
+                }
+                req.flash('success', 'The user has been notified! Thanks for supporting seedhelper.')
+                res.redirect('/work')                
+            })
+        })
+    })
+})
+
 app.get('/work/movables', enforceLogin, (req, res) => {
     redisClient.spop('movableNeededDevices', (err, deviceid) => {
         if (err) {
@@ -626,6 +673,10 @@ app.get('/work/movable/:deviceid', enforceLogin, (req, res) => {
             req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
             return res.redirect('/work')
         }
+        if(!device) {
+            req.flash('error', "This device doesn't exist.")
+            return res.redirect('/work')
+        }
         if(device.worker != req.user) {
             req.flash('error', "You haven't been assigned to work on this device.")
             return res.redirect('/work')
@@ -643,7 +694,7 @@ app.post('/work/movable/:deviceid', enforceLogin, upload.fields([{
     name: 'movable',
     maxCount: 1
 }]), (req, res) => {
-    if (!req.files) {
+    if (!req.files.length) {
         req.flash('error', 'You must upload a file.')
         return res.redirect(`/work/movable/${req.params.deviceid}`)
     } else {
