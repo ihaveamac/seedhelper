@@ -141,6 +141,7 @@ app.get('/add', enforceLogin, (req, res) => {
     const deviceid = uuid()
     redisClient.hmset(`device:${deviceid}`, {
         name: 'New Device',
+        owner: req.user
     }, (err, result) => {
         if (err) {
             req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
@@ -161,6 +162,10 @@ app.get('/device/:deviceid/edit', enforceLogin, (req, res) => {
         if (err) {
             req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
             return res.redirect('/home')
+        }
+        if (device.owner != req.user) {
+            req.flash('error', "You can't edit other people's devices.")
+            return res.redirect(`/home`)
         }
         device.id = req.params.deviceid
         res.render('edit', {
@@ -185,6 +190,10 @@ app.post('/device/:deviceid/edit', enforceLogin, upload.fields([{
         if (err) {
             req.flash('error', 'Redis error 1. Please try again and report this issue if you see it again.')
             return res.redirect(`/device/${req.params.deviceid}/edit`)
+        }
+        if (oldDevice.owner != req.user) {
+            req.flash('error', "You can't edit other people's devices.")
+            return res.redirect(`/home`)
         }
         if (!req.files && !oldDevice.p1) {
             if (!req.body.id0 || !req.body.friendCode) {
@@ -266,36 +275,50 @@ app.post('/device/:deviceid/edit', enforceLogin, upload.fields([{
 //this is broken out so it can also be used in deleteaccount
 
 function deleteDevice(user, deviceid) {
-    redisClient.del(`device:${deviceid}`, (err, result) => {
+    redisClient.hget(`device:${deviceid}`, 'owner', (err, owner) => {
         if (err) {
             return {'error': 'Redis error. Please try again and report this issue if you see it again.'}
         }
-        redisClient.srem(`devices:${user}`, deviceid, (err, result) => {
+        if (owner != user) {
+            return {'error': "You can't delete other people's devices."}
+        }
+        redisClient.del(`device:${deviceid}`, (err, result) => {
             if (err) {
                 return {'error': 'Redis error. Please try again and report this issue if you see it again.'}
             }
-            redisClient.srem(`p1NeededDevices`, deviceid, (err, result) => {
+            redisClient.srem(`devices:${user}`, deviceid, (err, result) => {
                 if (err) {
                     return {'error': 'Redis error. Please try again and report this issue if you see it again.'}
                 }
-                redisClient.srem(`movableNeededDevices`, deviceid, (err, result) => {
+                redisClient.srem(`p1NeededDevices`, deviceid, (err, result) => {
                     if (err) {
                         return {'error': 'Redis error. Please try again and report this issue if you see it again.'}
                     }
-                    fs.unlink(`static/ugc/movable/${deviceid}_movable.sed`, (err) => {
-                        if (err && err != "ENOENT") { // file not found
+                    redisClient.srem(`movableNeededDevices`, deviceid, (err, result) => {
+                        if (err) {
+                            return {'error': 'Redis error. Please try again and report this issue if you see it again.'}
+                        }
+                        redisClient.srem(`workingDevices`, deviceid, (err, result) => {
+                            if (err) {
+                                return {'error': 'Redis error. Please try again and report this issue if you see it again.'}
+                            }
                             fs.unlink(`static/ugc/movable/${deviceid}_movable.sed`, (err) => {
                                 if (err && err != "ENOENT") { // file not found
-                                    // success, no return
+                                    fs.unlink(`static/ugc/movable/${deviceid}_movable.sed`, (err) => {
+                                        if (err && err != "ENOENT") { // file not found
+                                            // success, no return
+                                        }
+                                    })
                                 }
                             })
-                        }
+                        })
                     })
                 })
-            })
 
+            })
         })
     })
+
 }
 
 app.get('/device/:deviceid/delete', enforceLogin, (req, res) => {
@@ -485,6 +508,10 @@ app.get('/work/part1/:deviceid', enforceLogin, (req, res) => {
             req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
             return res.redirect('/work')
         }
+        if(device.worker != req.user) {
+            req.flash('error', "You haven't been assigned to work on this device.")
+            return res.redirect('/work')
+        }
         device.id = req.params.deviceid
         res.render('part1', {
             device: device,
@@ -510,6 +537,10 @@ app.post('/work/part1/:deviceid', enforceLogin, upload.fields([{
             if (err) {
                 req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
                 return res.redirect(`/work/part1/${req.params.deviceid}`)
+            }
+            if(device.worker != req.user) {
+                req.flash('error', "You haven't been assigned to work on this device.")
+                return res.redirect('/work')
             }
             req.files.p1[0].buffer.write(device.id0.toLowerCase(), 0x10, 0x40)
             if (req.files.p1[0].buffer.readUIntBE(0, 4) == 0) {
@@ -588,6 +619,10 @@ app.get('/work/movable/:deviceid', enforceLogin, (req, res) => {
             req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
             return res.redirect('/work')
         }
+        if(device.worker != req.user) {
+            req.flash('error', "You haven't been assigned to work on this device.")
+            return res.redirect('/work')
+        }
         device.id = req.params.deviceid
         res.render('movable', {
             device: device,
@@ -623,6 +658,10 @@ app.post('/work/movable/:deviceid', enforceLogin, upload.fields([{
             if (err) {
                 req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
                 return res.redirect(`/work/movable/${req.params.deviceid}`)
+            }
+            if(device.worker != req.user) {
+                req.flash('error', "You haven't been assigned to work on this device.")
+                return res.redirect('/work')
             }
             if (device.id0 !== id0) {
                 req.flash('error', 'Movable.sed is invalid for this device.')
@@ -664,7 +703,7 @@ setInterval(() => {
                 if (err) {
                     console.log('error', 'Redis error. Please try again and report this issue if you see it again.')
                 }
-                if (device.workStartTime + 7200000 < Date.now()) {
+                if (device.workStartTime + 7200000 < Date.now()) { // 2 hours
                     console.log(`Worker ${device.worker} is taking too long, repooling...`)
                 }
                 redisClient.srem('workingDevices', deviceid, (err, result) => {
