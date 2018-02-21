@@ -36,7 +36,6 @@ app.use(session({
     saveUninitialized: true,
     cookie: {
         //secure: true,
-        maxAge: 3600000 // 1 hour;
     }
 }))
 app.use(require('express-flash')())
@@ -92,7 +91,32 @@ function enforceLogin(req, res, next) {
     }
 }
 
+/*    # based on https://github.com/megumisonoda/SaberBot/blob/master/lib/saberbot/valid_fc.rb
+    def verify_fc(self, fc):
+        fc = int(fc.replace('-', ''))
+        if fc > 0x7FFFFFFFFF:
+            return None
+        principal_id = fc & 0xFFFFFFFF
+        checksum = (fc & 0xFF00000000) >> 32
+        return (fc if hashlib.sha1(struct.pack('<L', principal_id)).digest()[0] >> 1 == checksum else None)
+        */
 
+function verifyFc(fc) {
+    let number = parseInt(fc.replace(/-/g, ''))
+    if (fc > 0x7FFFFFFFFF) {
+        return false
+    }
+    let principalId = number & 0xFFFFFFFF
+    let checksum = (number & 0xFF00000000) >> 32
+    let ourString = "0x3c4c" + principalId.toString(16) // <L
+    let ourThing = Buffer.from(ourString, 'hex')
+    let hash = crypto.createHash('sha1').update(ourThing)
+    let correctCheck = hash.digest().readUInt8(1)
+    console.log(number, principalId, ourString, correctCheck, correctCheck >> 1, checksum)
+    return (correctCheck >> 1 == checksum ? true : false)
+}
+
+console.log(verifyFc('0275-9929-0078'))
 
 app.get('/', (req, res) => {
     if (!req.user) {
@@ -638,6 +662,37 @@ app.get('/work/part1/:deviceid/fcinvalid', enforceLogin, (req, res) => {
     })
 })
 
+app.get('/work/part1/:deviceid/cancel', enforceLogin, (req, res) => {
+    redisClient.hgetall(`device:${req.params.deviceid}`, (err, device) => {
+        if (err) {
+            req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
+            return res.redirect(`/work/part1/${req.params.deviceid}`)
+        }
+        if(!device) {
+            req.flash('error', "This device doesn't exist.")
+            return res.redirect('/work')
+        }
+        if(device.worker != req.user) {
+            req.flash('error', "You haven't been assigned to work on this device.")
+            return res.redirect('/work')
+        }
+        redisClient.srem('workingDevices', req.params.deviceid, (err, result) => {
+            if (err) {
+                req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
+                return res.redirect(`/work/part1/${req.params.deviceid}`)
+            }
+            redisClient.sadd('p1NeededDevices', req.params.deviceid, (err, result) => {
+                if (err) {
+                    req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
+                    return res.redirect(`/work/part1/${req.params.deviceid}`)
+                }
+                req.flash('success', 'The work has been canceled! No need to feel bad, at least you didn\'t keep it running.')
+                res.redirect('/work')   
+            })
+        })
+    })
+})
+
 app.get('/work/movables', enforceLogin, (req, res) => {
     redisClient.spop('movableNeededDevices', (err, deviceid) => {
         if (err) {
@@ -748,6 +803,37 @@ app.post('/work/movable/:deviceid', enforceLogin, upload.fields([{
             })
         })
     }
+})
+
+app.get('/work/movable/:deviceid/cancel', enforceLogin, (req, res) => {
+    redisClient.hgetall(`device:${req.params.deviceid}`, (err, device) => {
+        if (err) {
+            req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
+            return res.redirect(`/work/movable/${req.params.deviceid}`)
+        }
+        if(!device) {
+            req.flash('error', "This device doesn't exist.")
+            return res.redirect('/work')
+        }
+        if(device.worker != req.user) {
+            req.flash('error', "You haven't been assigned to work on this device.")
+            return res.redirect('/work')
+        }
+        redisClient.srem('workingDevices', req.params.deviceid, (err, result) => {
+            if (err) {
+                req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
+                return res.redirect(`/work/movable/${req.params.deviceid}`)
+            }
+            redisClient.sadd('p1NeededDevices', req.params.deviceid, (err, result) => {
+                if (err) {
+                    req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
+                    return res.redirect(`/work/movable/${req.params.deviceid}`)
+                }
+                req.flash('success', 'The work has been canceled! No need to feel bad, at least you didn\'t keep it running.')
+                res.redirect('/work')   
+            })
+        })
+    })
 })
 
 // automatically repool dead tasks

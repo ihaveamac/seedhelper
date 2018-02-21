@@ -2,7 +2,7 @@ include includes/base
 
 +base("Work")
     h1 Lend your devices to Seedhelper
-    p Seedhelper is made possible by the users who volunteer their time, CFW devices and GPUs to help people get CFW. Learn how you can help.
+    p Seedhelper is made possible by the users who volunteer their time, CFW devices and GPUs to help people get CFW. Learn how you can help. #[b Note: You can middle-click the buttons to open the work in a new tab and work on multiple tasks at once.]
     .pure-g
         .pure-u-1-2
             h2 Retrieve Part1
@@ -28,7 +28,23 @@ include includes/base
         .pure-u-1-2
             h2 Retrieve Movable.sed
             p The second part of the seedminer process involves using #[code movable_part1.sed] to bruteforce #[code movable.sed] which can be used to decrypt, inject and encrypt DSiWare games with seedplanter. This is done with seedminer and requires a dedicated GPU for decent performance.
-            h3 Instructions
+            h3 Automatic Instructions (recommended!)
+            b This new method allows you to continuously bruteforce movable.seds without interaction.
+            ol
+                b First time setup
+                li Download #[a(href="https://github.com/zoogie/seedminer/releases/latest") the latest version of seedminer (the zip file)]
+                li Download #[a(href="https://www.python.org/downloads/") the latest version of Python 2 (not 3)]
+                li Download #[a(href="/static/seedminer_autolauncher.py") #[code seedminer_autolauncher.py]]
+                li Extract the seedminer zip to a folder on your computer.
+                li Copy #[code seedminer_autolauncher.py] to the seedminer folder.
+                b When you want to help
+                li Open a command prompt in the seedminer folder by shift-right clicking inside it and clicking 'Open command window here' or 'Open PowerShell window here'.
+                li Run #[code python seedminer_autolauncher.py].
+                li You may be prompted for login details.
+                li Once you first see "Finding work..." then you can leave the script running.
+                li If you want to stop, just press Ctrl+C in the first command prompt to stop working at any time.
+                
+            h3 Manual Instructions
             ol
                 b First time setup
                 li Download #[a(href="https://github.com/zoogie/seedminer/releases/latest") the latest version of seedminer (the zip file)]
@@ -38,7 +54,7 @@ include includes/base
                 li Click the 'Start working' button below to request a user to work on.
                 li Download the file provided to your computer and copy it to the #[code seedminer] folder.
                 li Rename the file to #[code movable_part1.sed].
-                li Open a command prompt.
+                li Open a command prompt in the seedminer folder by shift-right clicking inside it and clicking 'Open command window here' or 'Open PowerShell window here'.
                 li Run #[code python seedminer_launcher.py gpu].
                 li Upload #[code movable.sed] to the website once complete.
                 li Delete #[code movable_part1.sed] and #[code movable.sed] from the #[code seedminer] folder on your computer.
