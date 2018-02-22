@@ -54,8 +54,8 @@ while True:
         os.system('"' + sys.executable + '" seedminer_launcher3.py gpu')
         if os.path.isfile("movable.sed"):
             print("Uploading")
-            ur = s.post(r.url, files={'file': open('movable.sed', 'rb')})
-            if ur.url == '/work':
+            ur = s.post(r.url, files={'movable': open('movable.sed', 'rb')})
+            if ur.url == baseurl + '/work':
                 print("Upload succeeded!")
                 os.remove("movable.sed")
             else:
