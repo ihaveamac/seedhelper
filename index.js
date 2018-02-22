@@ -8,7 +8,6 @@ const async = require('async')
 const bcrypt = require('bcrypt')
 const crypto = require('crypto')
 const fs = require('fs')
-const struct = require('python-struct')
 
 const passport = require('passport')
 const LocalStrategy = require('passport-local').Strategy
@@ -98,28 +97,19 @@ function enforceLogin (req, res, next) {
   }
 }
 
-/*    # based on https://github.com/megumisonoda/SaberBot/blob/master/lib/saberbot/valid_fc.rb
-    def verify_fc(self, fc):
-        fc = int(fc.replace('-', ''))
-        if fc > 0x7FFFFFFFFF:
-            return None
-        principal_id = fc & 0xFFFFFFFF
-        checksum = (fc & 0xFF00000000) >> 32
-        return (fc if hashlib.sha1(struct.pack('<L', principal_id)).digest()[0] >> 1 == checksum else None)
-        */
+// thank u so much to https://github.com/zaksabeast/3dsFriendCodeValidator/blob/master/index.html i've spent hours on this and i dont even care that extending prototype is bad anymore although TODO: stop extending prototype
+String.prototype.paddingLeft = function (paddingValue) {
+  return String(paddingValue + this).slice(-paddingValue.length);
+};
 
-function verifyFc (fc) {
-  let number = parseInt(fc.replace(/-/g, ''))
-  if (number > 0x7FFFFFFFFF) {
-    return false
-  }
-  let principalId = number & 0xFFFFFFFF
-  let checksum = (number & 0xFF00000000) >> 32
-  let ourThing = struct.pack('<L', principalId)
-  let hash = crypto.createHash('sha1').update(ourThing)
-  let correctCheck = hash.digest().readUInt8(1)
-  console.log(fc, number, principalId, correctCheck, correctCheck >> 1, checksum)
-  return (correctCheck >> 1 === checksum)
+function verifyFc(fc){
+  var fcParts = parseInt(fc.replace(/-/g, ""), 10).toString(16).paddingLeft("0000000000").match(/.{1,2}/g),
+    fcHex = (fcParts[4]+fcParts[3]+fcParts[2]+fcParts[1]).paddingLeft("00000000"),
+    shaObj = crypto.createHash('sha1')
+  shaObj.update(fcHex, 'hex');
+  var idChecksum = (parseInt(shaObj.digest("hex").slice(0,2), 16)>>1).toString(16).paddingLeft("00");
+
+  return (fcParts[0]==idChecksum)
 }
 
 console.log(verifyFc('0275-9929-0078'))
@@ -238,7 +228,7 @@ app.post('/device/:deviceid/edit', enforceLogin, upload.fields([{
         return res.redirect(`/device/${req.params.deviceid}/edit`)
       } else {
         device.id0 = req.body.id0.toLowerCase()
-        if (!fcRe.test(req.body.friendCode)) {
+        if (!fcRe.test(req.body.friendCode) && !verifyFc(req.body.friendCode)) {
           req.flash('error', 'You must specify a valid friend code.')
           return res.redirect(`/device/${req.params.deviceid}/edit`)
         }
@@ -450,7 +440,7 @@ app.post('/register', (req, res) => {
     req.flash('error', 'You must specify a friend code.')
     return res.redirect('/register')
   }
-  if (!fcRe.test(req.body.friendCode)) {
+  if (!fcRe.test(req.body.friendCode) && !verifyFc(req.body.friendCode)) {
     req.flash('error', 'You must specify a valid friend code.')
     return res.redirect('/register')
   }
