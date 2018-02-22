@@ -16,6 +16,6 @@ Read the help page on website for more information.
 
 # Credits
 * @zoogie for creating the seedminer toolset and finding the movable.sed vulnerability.
-* @saibotu, @jason0597, @Pirater12, and @knight-ryu12 for testing and help.
+* [saibotu](https://github.com/saibotu), [jason0597](https://github.com/jason0597), [Kartik](https://github.com/Pirater12), and [Chromaryu](https://github.com/knight-ryu12) for testing and help.
 * Nintendo for designing horribly broken systems :D
 
