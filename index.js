@@ -97,19 +97,19 @@ function enforceLogin (req, res, next) {
   }
 }
 
-// thank u so much to https://github.com/zaksabeast/3dsFriendCodeValidator/blob/master/index.html i've spent hours on this and i dont even care that extending prototype is bad anymore although TODO: stop extending prototype
-String.prototype.paddingLeft = function (paddingValue) {
-  return String(paddingValue + this).slice(-paddingValue.length);
-};
+// thank u so much to https://github.com/zaksabeast/3dsFriendCodeValidator/blob/master/index.html i've spent hours on this
+function padStringLeft (str, paddingValue) {
+  return String(paddingValue + str).slice(-paddingValue.length)
+}
 
-function verifyFc(fc){
-  var fcParts = parseInt(fc.replace(/-/g, ""), 10).toString(16).paddingLeft("0000000000").match(/.{1,2}/g),
-    fcHex = (fcParts[4]+fcParts[3]+fcParts[2]+fcParts[1]).paddingLeft("00000000"),
-    shaObj = crypto.createHash('sha1')
-  shaObj.update(fcHex, 'hex');
-  var idChecksum = (parseInt(shaObj.digest("hex").slice(0,2), 16)>>1).toString(16).paddingLeft("00");
+function verifyFc (fc) {
+  let fcParts = padStringLeft(parseInt(fc.replace(/-/g, ''), 10).toString(16), '0000000000').match(/.{1,2}/g)
+  let fcHex = padStringLeft(fcParts[4] + fcParts[3] + fcParts[2] + fcParts[1], '00000000')
+  let shaObj = crypto.createHash('sha1')
+  shaObj.update(fcHex, 'hex')
+  var idChecksum = padStringLeft((parseInt(shaObj.digest('hex').slice(0, 2), 16) >> 1).toString(16), '00')
 
-  return (fcParts[0]==idChecksum)
+  return (fcParts[0] === idChecksum)
 }
 
 console.log(verifyFc('0275-9929-0078'))
