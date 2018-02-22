@@ -36,8 +36,8 @@ while True:
     print("Finding work...")
     r = s.get(baseurl + "/work/movables")
     if r.url == baseurl + "/work":
-        print("No work. Waiting 5 minutes...")
-        time.sleep(300)
+        print("No work. Waiting 2 minutes...")
+        time.sleep(120)
     else:
         regex = re.compile(r".*/work/movable/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})")
         currentid = regex.findall(r.url)[0]

@@ -542,13 +542,19 @@ app.get('/work', enforceLogin, (req, res) => {
                 req.flash('error', 'Looping error. Please try again and report this issue if you see it again.')
                 return res.redirect('/')
             }
-            res.render('work', {
-                devices: array,
-                user: req.user
+            redisClient.hget(`users:${req.user}`, 'workPoints', (err, workPoints) => {
+                if (err) {
+                    req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
+                    return res.redirect('/')
+                }
+                res.render('work', {
+                    devices: array,
+                    user: req.user,
+                    workPoints: workPoints
+                })
             })
         })
     })
-
 })
 
 app.get('/work/part1s', enforceLogin, (req, res) => {
@@ -672,12 +678,24 @@ app.post('/work/part1/:deviceid', enforceLogin, upload.fields([{
                                         req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
                                         return res.redirect(`/work/part1/${req.params.deviceid}`)
                                     }
+                                    redisClient.hincrby(`users:${req.user}`, 'workPoints', 2, (err, result) => {
+                                        if (err) {
+                                            req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
+                                            return res.redirect(`/work/part1/${req.params.deviceid}`)
+                                        }
+                                        req.flash('success', 'Movable_part1 uploaded successfully! Thanks for supporting seedhelper.')
+                                        res.redirect('/work')
+                                    })
+                                })
+                            } else {
+                                redisClient.hincrby(`users:${req.user}`, 'workPoints', 2, (err, result) => {
+                                    if (err) {
+                                        req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
+                                        return res.redirect(`/work/part1/${req.params.deviceid}`)
+                                    }
                                     req.flash('success', 'Movable_part1 uploaded successfully! Thanks for supporting seedhelper.')
                                     res.redirect('/work')
                                 })
-                            } else {
-                                req.flash('success', 'Movable_part1 uploaded successfully! Thanks for supporting seedhelper.')
-                                res.redirect('/work')
                             }
                         })
                     })
@@ -876,8 +894,14 @@ app.post('/work/movable/:deviceid', enforceLogin, upload.fields([{
                                 req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
                                 return res.redirect(`/work/movable/${req.params.deviceid}`)
                             }
-                            req.flash('success', 'Movable uploaded successfully! Thanks for supporting seedhelper.')
-                            res.redirect('/work')
+                            redisClient.hincrby(`users:${req.user}`, 'workPoints', 5, (err, result) => {
+                                if (err) {
+                                    req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
+                                    return res.redirect(`/work/movable/${req.params.deviceid}`)
+                                }
+                                req.flash('success', 'Movable uploaded successfully! Thanks for supporting seedhelper.')
+                                res.redirect('/work')
+                            })
                         })
                     })
                 })
