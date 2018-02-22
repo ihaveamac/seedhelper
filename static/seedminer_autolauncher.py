@@ -1,10 +1,17 @@
-import os,requests,os.path,cookielib,getpass,sys,signal,time,re
+import os
+import requests
+import os.path
+import getpass
+import sys
+import signal
+import time
+import re
 
 s = requests.Session()
 baseurl = "https://seedhelper.figgyc.uk"
 currentid = ""
 
-username = raw_input("Username: ")
+username = input("Username: ")
 password = getpass.getpass("Password: ")
 print("Logging in...")
 r = s.post(baseurl + "/login", data={'username': username, 'password': password})

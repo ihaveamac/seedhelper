@@ -1,38 +1,43 @@
 mixin base(title)
-    doctype html
-    html
-        head
-            title= title + ' - Seedhelper'
-            meta(name="viewport" content="width=device-width, initial-scale=1")
-            link(rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css" integrity="sha384-nn4HPE8lTHyVtfCBi5yW9d20FjT8BJwUXyWZT9InLYax14RDjBj46LmSztkmNP9w" crossorigin="anonymous")
-            link(href="https://overpass-30e2.kxcdn.com/overpass.css" rel="stylesheet")
-            link(rel="stylesheet" href="/static/custom.css")
-            link(rel="icon" href="/static/favicon.png")
-        body
-            .pure-menu.pure-menu-horizontal
-                a.pure-menu-heading.pure-menu-link(href=user ? "/home" : "/") Seedhelper
-                ul.pure-menu-list
-                    li.pure-menu-item
-                        a.pure-menu-link(href="/work") Work
-                ul.pure-menu-list
-                    li.pure-menu-item
-                        a.pure-menu-link(href="/help") Help
-                ul.pure-menu-list.float-right
-                    if !user
-                        li.pure-menu-item
-                            a.pure-menu-link(href="/login") Login
-                    else
-                        li.pure-menu-item
-                            a.pure-menu-link(href="/logout") Logout
-            .padding-container
-                if messages
-                    each message,type in messages
-                        div(class=type + '-flash')= message
-                block
-                hr
-                .footer
-                    span © figgyc and contributors 2018
-                    a(href="https://github.com/figgyc/seedhelper") Source
-                    a(href="/static/terms.txt") Terms
-                    a(href="mailto:seedhelper@figgyc.uk") Contact
+  doctype html
+  html
+    head
+      meta(charset="utf-8")
+      title= title + ' - Seedhelper'
+      meta(name="viewport" content="width=device-width, initial-scale=1")
+      link(rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css" integrity="sha384-nn4HPE8lTHyVtfCBi5yW9d20FjT8BJwUXyWZT9InLYax14RDjBj46LmSztkmNP9w" crossorigin="anonymous")
+      link(href="https://overpass-30e2.kxcdn.com/overpass.css" rel="stylesheet")
+      link(rel="stylesheet" href="/static/custom.css")
+      link(rel="icon" href="/static/favicon.png")
+      meta(name="og:title" content=title)
+      meta(name="og:type" content="website")
+      meta(name="og:url" content="https://seedhelper.figgyc.uk/")
+      meta(name="og:description" content="Connect with other users to obtain your movable.sed!")
+      meta(name="og:image" content="https://seedhelper.figgyc.uk/static/favicon.png")
+    body
+      .pure-menu.pure-menu-horizontal
+        a.pure-menu-heading.pure-menu-link(href=user ? "/home" : "/") Seedhelper
+        ul.pure-menu-list
+          li.pure-menu-item
+            a.pure-menu-link(href="/work") Work
+          li.pure-menu-item
+            a.pure-menu-link(href="/help") Help
+        ul.pure-menu-list.float-right
+          if !user
+            li.pure-menu-item
+              a.pure-menu-link(href="/login") Login
+          else
+            li.pure-menu-item
+              a.pure-menu-link(href="/logout") Logout
+      .padding-container
+        if messages
+          each message,type in messages
+            div(class=type + '-flash')= message
+          block
+          hr
+          .footer
+            span © figgyc and contributors 2018
+              a(href="https://github.com/figgyc/seedhelper") Source
+              a(href="/static/terms.txt") Terms
+              a(href="mailto:seedhelper@figgyc.uk") Contact
 
