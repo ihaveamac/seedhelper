@@ -112,8 +112,6 @@ function verifyFc (fc) {
   return (fcParts[0] === idChecksum)
 }
 
-console.log(verifyFc('0275-9929-0078'))
-
 app.get('/', (req, res) => {
   if (!req.user) {
     res.render('index')
