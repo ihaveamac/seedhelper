@@ -20,7 +20,7 @@ if r.url == baseurl + '/home':
     print("Login successful")
 else:
     print("Login fail")
-    sys.exit(0)
+    sys.exit(1)
 
 def signal_handler(signal, frame):
         print('Exiting...')
@@ -43,8 +43,8 @@ while True:
     print("Finding work...")
     r = s.get(baseurl + "/work/movables")
     if r.url == baseurl + "/work":
-        print("No work. Waiting 2 minutes...")
-        time.sleep(120)
+        print("No work. Waiting 30 seconds...")
+        time.sleep(30)
     else:
         regex = re.compile(r".*/work/movable/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})")
         currentid = regex.findall(r.url)[0]
@@ -60,7 +60,7 @@ while True:
                 os.remove("movable.sed")
             else:
                 print("Upload failed!")
-                print(ur)
+                sys.exit(1)
         else:
             print("Failed!")
-            sys.exit(0)
+            sys.exit(1)
