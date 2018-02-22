@@ -15,7 +15,7 @@ Runs on port 3000 by default, use a proxy like nginx or caddy or change PORT env
 Read the help page on website for more information.
 
 # Credits
-* @zoogie for creating the seedminer toolset and finding the movable.sed vulnerability.
+* [zoogie](https://github.com/zoogie) for creating the seedminer toolset and finding the movable.sed vulnerability.
 * [saibotu](https://github.com/saibotu), [jason0597](https://github.com/jason0597), [Kartik](https://github.com/Pirater12), and [Chromaryu](https://github.com/knight-ryu12) for testing and help.
 * Nintendo for designing horribly broken systems :D
 * Everybody who helps this system stay alive by finding movable_part1 and bruteforcing movable for other users.
