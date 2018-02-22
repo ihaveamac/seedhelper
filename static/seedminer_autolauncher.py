@@ -51,7 +51,7 @@ while True:
         print("Downloading part1 for device " + currentid)
         download_file(baseurl + '/static/ugc/part1/' + currentid + '_part1.sed', 'movable_part1.sed')
         print("Bruteforcing")
-        os.system(sys.executable + " seedminer_launcher3.py gpu")
+        os.system('"' + sys.executable + '" seedminer_launcher3.py gpu')
         if os.path.isfile("movable.sed"):
             print("Uploading")
             ur = s.post(r.headers['Location'], files={'file': open('movable.sed', 'rb')})
