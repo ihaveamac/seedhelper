@@ -67,6 +67,9 @@ include includes/base
                 li Copy #[code seedminer_autolauncher.py] to the seedminer folder.
                 li Open a command prompt by pressing Windows+R, typing #[code cmd] and pressing Ctrl+Shift+Enter.
                 li Run #[code pip install requests].
+                li Open #[code seedminer_launcher3.py] in a decent text editor (not Notepad, IDLE included with Python will work) and find line 329.
+                li After #[code %08X] add a space and then #[code nopause]. If you do not do this then the script will pause when the bruteforce is done!
+                li Save the file.
                 b When you want to help
                 li Open a command prompt in the seedminer folder by shift-right clicking inside it and clicking 'Open command window here' or 'Open PowerShell window here'.
                 li Run #[code python seedminer_autolauncher.py].
