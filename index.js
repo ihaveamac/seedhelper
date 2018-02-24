@@ -1032,21 +1032,27 @@ setInterval(() => {
           if (err) {
             console.log('Redis error in timer task')
           }
-          if (!device.p1) {
-            redisClient.sadd('p1NeededDevices', deviceid, (err, result) => {
-              if (err) {
-                console.log('Redis error in timer task')
-              }
-            })
-          } else if (!device.movable) {
-            redisClient.sadd('movableNeededDevices', deviceid, (err, result) => {
-              if (err) {
-                console.log('Redis error in timer task')
-              }
-            })
-          } else {
-            console.log(`Actually ${device.worker} just got assigned a finished device.`)
-          }
+          redisClient.srem(`workingDevices:${device.worker}`, deviceid, (err, result) => {
+            if (err) {
+              console.log('Redis error in timer task')
+            }
+            if (!device.p1) {
+              redisClient.sadd('p1NeededDevices', deviceid, (err, result) => {
+                if (err) {
+                  console.log('Redis error in timer task')
+                }
+              })
+            } else if (!device.movable) {
+              redisClient.sadd('movableNeededDevices', deviceid, (err, result) => {
+                if (err) {
+                  console.log('Redis error in timer task')
+                }
+              })
+            } else {
+              console.log(`Actually ${device.worker} just got assigned a finished device.`)
+            }
+          })
+
         })
       })
     }, err => {
