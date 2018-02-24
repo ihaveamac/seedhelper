@@ -11,6 +11,9 @@ s = requests.Session()
 baseurl = "https://seedhelper.figgyc.uk"
 currentid = ""
 
+print("Updating seedminer db...")
+os.system('"' + sys.executable + '" seedminer_launcher3.py update-db')
+
 username = input("Username: ")
 password = getpass.getpass("Password: ")
 print("Logging in...")
