@@ -226,7 +226,7 @@ app.post('/device/:deviceid/edit', enforceLogin, upload.fields([{
         return res.redirect(`/device/${req.params.deviceid}/edit`)
       } else {
         device.id0 = req.body.id0.toLowerCase()
-        if (!fcRe.test(req.body.friendCode) && !verifyFc(req.body.friendCode)) {
+        if (!fcRe.test(req.body.friendCode) || !verifyFc(req.body.friendCode)) {
           req.flash('error', 'You must specify a valid friend code.')
           return res.redirect(`/device/${req.params.deviceid}/edit`)
         }
@@ -438,7 +438,7 @@ app.post('/register', (req, res) => {
     req.flash('error', 'You must specify a friend code.')
     return res.redirect('/register')
   }
-  if (!fcRe.test(req.body.friendCode) && !verifyFc(req.body.friendCode)) {
+  if (!fcRe.test(req.body.friendCode) || !verifyFc(req.body.friendCode)) {
     req.flash('error', 'You must specify a valid friend code.')
     return res.redirect('/register')
   }
