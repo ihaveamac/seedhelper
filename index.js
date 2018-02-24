@@ -972,7 +972,7 @@ app.get('/work/movable/:deviceid/cancel', enforceLogin, (req, res) => {
 })
 
 app.get('/work/msed', enforceLogin, (req, res) => {
-  app.render('msed', {
+  res.render('msed', {
     user: req.user
   })
 })
