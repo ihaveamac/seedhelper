@@ -273,6 +273,7 @@ app.post('/device/:deviceid/edit', enforceLogin, upload.fields([{
         return res.redirect(`/work/part1/${req.params.deviceid}/edit`)
       }
       device.p1 = true
+      req.files.p1[0].buffer.write(device.id0.toLowerCase(), 0x10, 0x40)
       fs.writeFile(`static/ugc/part1/${req.params.deviceid}_part1.sed`, req.files.p1[0].buffer, (err) => {
         if (err) {
           req.flash('error', 'File upload error. Please try again and report this issue if you see it again.')
