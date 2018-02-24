@@ -971,13 +971,13 @@ app.get('/work/movable/:deviceid/cancel', enforceLogin, (req, res) => {
   })
 })
 
-app.get('/work/msed', enforceLogin, (req, res) => {
+app.get('/work/msed',  (req, res) => {
   res.render('msed', {
     user: req.user
   })
 })
 
-app.post('/work/msed', enforceLogin, upload.fields([
+app.post('/work/msed', upload.fields([
   {
     name: 'msed'
   }
@@ -997,7 +997,7 @@ app.post('/work/msed', enforceLogin, upload.fields([
           req.flash('error', 'File upload error. Please try again and report this issue if you see it again.')
           return res.redirect(`/work/msed`)
         }
-        redisClient.hincrby(`users:${req.user}`, 'workPoints', 3, (err, result) => {
+        redisClient.hincrby(`users:${req.user || 'nologin'}`, 'workPoints', 3, (err, result) => {
           if (err) {
             req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
             return res.redirect(`/work/msed`)
