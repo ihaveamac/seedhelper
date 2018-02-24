@@ -7,6 +7,7 @@ A tool to assist users of the seedminer method to communicate.
 ```
 sudo apt install redis # or equivalent
 npm i
+# optional: copy seedminer saves to /static/ugc/data as a basis for automatic msed db
 NODE_ENV=production SESSION_SECRET=dontsharethis node seedhelper.js
 ```
 Runs on port 3000 by default, use a proxy like nginx or caddy or change PORT environment variable to 80.

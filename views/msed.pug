@@ -1,0 +1,14 @@
+include includes/base
+
++base("Msed Work")
+    h1 Msed Work
+
+    form.pure-form.pure-form-aligned(method="post" enctype="multipart/form-data")
+        fieldset
+            .pure-control-group
+                label(for="msed") Msed_data
+                input#name(type="file" name="msed" required multiple)
+                span.pure-form-message-inline You can upload several at once.
+            .pure-controls
+                button.pure-button.pure-button-primary(type="submit") Submit
+                a.pure-button(href=`${device.id}/cancel`) Cancel
