@@ -6,13 +6,27 @@ import sys
 import signal
 import time
 import re
+import glob
 
 s = requests.Session()
 baseurl = "https://seedhelper.figgyc.uk"
 currentid = ""
 
+# https://stackoverflow.com/a/16696317 thx
+def download_file(url, local_filename):
+    # NOTE the stream=True parameter
+    r = requests.get(url, stream=True)
+    with open(local_filename, 'wb') as f:
+        for chunk in r.iter_content(chunk_size=1024):
+            if chunk: # filter out keep-alive new chunks
+                f.write(chunk)
+                #f.flush() commented by recommendation from J.F.Sebastian
+    return local_filename
+
+
 print("Updating seedminer db...")
-os.system('"' + sys.executable + '" seedminer_launcher3.py update-db')
+download_file(baseurl + '/static/ugc/data/lfcs.dat', 'saves/lfcs.dat')
+download_file(baseurl + '/static/ugc/data/lfcs_new.dat', 'saves/lfcs_new.dat')
 
 username = input("Username: ")
 password = getpass.getpass("Password: ")
@@ -31,16 +45,7 @@ def signal_handler(signal, frame):
         sys.exit(0)
 signal.signal(signal.SIGINT, signal_handler)
 
-# https://stackoverflow.com/a/16696317 thx
-def download_file(url, local_filename):
-    # NOTE the stream=True parameter
-    r = requests.get(url, stream=True)
-    with open(local_filename, 'wb') as f:
-        for chunk in r.iter_content(chunk_size=1024):
-            if chunk: # filter out keep-alive new chunks
-                f.write(chunk)
-                #f.flush() commented by recommendation from J.F.Sebastian
-    return local_filename
+
 
 while True:
     print("Finding work...")
@@ -57,7 +62,9 @@ while True:
         os.system('"' + sys.executable + '" seedminer_launcher3.py gpu')
         if os.path.isfile("movable.sed"):
             print("Uploading")
-            ur = s.post(r.url, files={'movable': open('movable.sed', 'rb')})
+            list_of_files = glob.glob('msed_data_*.bin') # * means all if need specific format then *.csv
+            latest_file = max(list_of_files, key=os.path.getctime)
+            ur = s.post(r.url, files={'movable': open('movable.sed', 'rb'), 'msed': open(latest_file, 'rb')})
             if ur.url == baseurl + '/work':
                 print("Upload succeeded!")
                 os.remove("movable.sed")

@@ -10,6 +10,10 @@ include includes/base
             .pure-control-group
                 label(for="movable") Movable.sed
                 input#name(type="file" required name="movable")
+            .pure-control-group
+                label(for="msed") Msed_data
+                input#name(type="file" name="msed")
+                span.pure-form-message-inline Optional but highly recommended. Will automatically be added to the automatic msed database.
             .pure-controls
                 button.pure-button.pure-button-primary(type="submit") Submit
                 a.pure-button(href=`${device.id}/cancel`) Cancel

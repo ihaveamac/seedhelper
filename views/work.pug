@@ -81,13 +81,21 @@ include includes/base
                 b First time setup
                 li Download #[a(href="https://github.com/zoogie/seedminer/releases/latest") the latest version of seedminer (the zip file)]
                 li Download #[a(href="https://www.python.org/downloads/") the latest version of Python 3 (not 2)]
+                li Download #[a(href="/static/ugc/data/lfcs.dat") #[code lfcs.dat]] and #[a(href="/static/ugc/data/lfcs_new.dat") #[code lfcs_new.dat]].
+
                 li Extract the seedminer zip to a folder on your computer.
+                li Copy the two #[code dat] files to the saves folder inside the seedminer folder, replacing the existing files.
                 b For each user
                 li Click the 'Start working' button below to request a user to work on.
                 li Download the file provided to your computer and copy it to the #[code seedminer] folder.
                 li Rename the file to #[code movable_part1.sed].
                 li Open a command prompt in the seedminer folder by shift-right clicking inside it and clicking 'Open command window here' or 'Open PowerShell window here'.
                 li Run #[code python seedminer_launcher3.py gpu].
-                li Upload #[code movable.sed] to the website once complete.
+                li Upload #[code movable.sed] and the msed_data file listed by the script to the website once complete.
                 li Delete #[code movable_part1.sed] and #[code movable.sed] from the #[code seedminer] folder on your computer.
             a.pure-button.pure-button-primary(href="/work/movables") Start working
+        .pure-u-1
+            h2 Upload msed_data
+            p This is used if you already have an existing msed_data that you want to give to the automatic msed database. Simply press the button and upload.
+            a.pure-button.pure-button-primary(href="/work/msed") Upload files
+

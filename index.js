@@ -826,10 +826,16 @@ app.get('/work/movable/:deviceid', enforceLogin, (req, res) => {
   })
 })
 
-app.post('/work/movable/:deviceid', enforceLogin, upload.fields([{
-  name: 'movable',
-  maxCount: 1
-}]), (req, res) => {
+app.post('/work/movable/:deviceid', enforceLogin, upload.fields([
+  {
+    name: 'movable',
+    maxCount: 1
+  },
+  {
+    name: 'msed',
+    maxCount: 1
+  }
+]), (req, res) => {
   if (!Object.keys(req.files).length) {
     req.flash('error', 'You must upload a file.')
     return res.redirect(`/work/movable/${req.params.deviceid}`)
@@ -886,8 +892,33 @@ app.post('/work/movable/:deviceid', enforceLogin, upload.fields([{
                   req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
                   return res.redirect(`/work/movable/${req.params.deviceid}`)
                 }
-                req.flash('success', 'Movable uploaded successfully! Thanks for supporting seedhelper.')
-                res.redirect('/work')
+                if (req.files.msed) {
+                  if (req.files.msed[0].size !== 12) {
+                    req.flash('error', 'File is not a valid msed_data.')
+                    return res.redirect(`/work/movable/${req.params.deviceid}`)
+                  }
+                  let isNew = req.files.msed[0].buffer.readUInt32BE(8)
+                  let data = req.files.msed[0].buffer.slice(0, 8)
+                  let filename = '/static/ugc/data/lfcs.dat'
+                  if (isNew) filename = '/static/ugc/data/lfcs_new.dat'
+                  fs.appendFile(filename, data, err => {
+                    if (err) {
+                      req.flash('error', 'File upload error. Please try again and report this issue if you see it again.')
+                      return res.redirect(`/work/movable/${req.params.deviceid}`)
+                    }
+                    redisClient.hincrby(`users:${req.user}`, 'workPoints', 3, (err, result) => {
+                      if (err) {
+                        req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
+                        return res.redirect(`/work/movable/${req.params.deviceid}`)
+                      }
+                      req.flash('success', 'Movable and msed_data uploaded successfully! Thanks for supporting seedhelper.')
+                      res.redirect('/work')
+                    })
+                  })
+                } else {
+                  req.flash('success', 'Movable uploaded successfully! Thanks for supporting seedhelper.')
+                  res.redirect('/work')
+                }
               })
             })
           })
@@ -938,6 +969,48 @@ app.get('/work/movable/:deviceid/cancel', enforceLogin, (req, res) => {
       })
     })
   })
+})
+
+app.get('/work/msed', enforceLogin, (req, res) => {
+  app.render('msed', {
+    user: req.user
+  })
+})
+
+app.post('/work/msed', enforceLogin, upload.fields([
+  {
+    name: 'msed'
+  }
+]), (req, res) => {
+  if (req.files.msed) {
+    for (let file of req.files.msed) {
+      if (file.size !== 12) {
+        req.flash('error', 'File is not a valid msed_data.')
+        return res.redirect(`/work/msed`)
+      }
+      let isNew = file.buffer.readUInt32BE(8)
+      let data = file.buffer.slice(0, 8)
+      let filename = '/static/ugc/data/lfcs.dat'
+      if (isNew) filename = '/static/ugc/data/lfcs_new.dat'
+      fs.appendFile(filename, data, err => {
+        if (err) {
+          req.flash('error', 'File upload error. Please try again and report this issue if you see it again.')
+          return res.redirect(`/work/msed`)
+        }
+        redisClient.hincrby(`users:${req.user}`, 'workPoints', 3, (err, result) => {
+          if (err) {
+            req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
+            return res.redirect(`/work/msed`)
+          }
+        })
+      })
+    }
+    req.flash('success', 'Msed_data uploaded successfully! Thanks for supporting seedhelper.')
+    res.redirect('/work')
+  } else {
+    req.flash('error', 'No msed_data files were found.')
+    res.redirect('/work/msed')
+  }
 })
 
 // automatically repool dead tasks
