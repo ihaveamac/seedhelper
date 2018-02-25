@@ -909,8 +909,8 @@ app.post('/work/movable/:deviceid', enforceLogin, upload.fields([
                   }
                   let isNew = req.files.msed[0].buffer.readUInt32BE(8)
                   let data = req.files.msed[0].buffer.slice(0, 8)
-                  let filename = '/static/ugc/data/lfcs.dat'
-                  if (isNew) filename = '/static/ugc/data/lfcs_new.dat'
+                  let filename = 'static/ugc/data/lfcs.dat'
+                  if (isNew) filename = 'static/ugc/data/lfcs_new.dat'
                   fs.appendFile(filename, data, err => {
                     if (err) {
                       req.flash('error', 'File upload error. Please try again and report this issue if you see it again.')
@@ -1000,8 +1000,8 @@ app.post('/work/msed', upload.fields([
       }
       let isNew = file.buffer.readUInt32BE(8)
       let data = file.buffer.slice(0, 8)
-      let filename = '/static/ugc/data/lfcs.dat'
-      if (isNew) filename = '/static/ugc/data/lfcs_new.dat'
+      let filename = 'static/ugc/data/lfcs.dat'
+      if (isNew) filename = 'static/ugc/data/lfcs_new.dat'
       fs.appendFile(filename, data, err => {
         if (err) {
           req.flash('error', 'File upload error. Please try again and report this issue if you see it again.')
