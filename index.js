@@ -311,7 +311,7 @@ app.post('/device/:deviceid/edit', enforceLogin, upload.fields([{
 
 function deleteDevice (user, deviceid) {
   redisClient.hgetall(`device:${deviceid}`, (err, device) => {
-    if (err) {
+    if (err || !device) {
       return {'error': 'Redis error. Please try again and report this issue if you see it again.'}
     }
     if (device.owner !== user) {
@@ -519,8 +519,17 @@ app.get('/work', enforceLogin, (req, res) => {
           req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
           return res.redirect('/')
         }
-        device.id = deviceid
-        array.push(device)
+        if (device) {
+          device.id = deviceid
+          array.push(device)
+        } else {
+          redisClient.srem(`workingDevices:${req.user}`, deviceid, (err, result) => {
+            if (err) {
+              req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
+              return res.redirect('/')
+            }
+          })
+        }
         callback()
       })
     }, err => {
@@ -984,7 +993,7 @@ app.post('/work/msed', upload.fields([
   }
 ]), (req, res) => {
   if (req.files.msed) {
-    for (let file of req.files.msed) {
+    async.forEach(req.files.msed, (file, callback) => {
       if (file.size !== 12) {
         req.flash('error', 'File is not a valid msed_data.')
         return res.redirect(`/work/msed`)
@@ -1003,11 +1012,17 @@ app.post('/work/msed', upload.fields([
             req.flash('error', 'Redis error. Please try again and report this issue if you see it again.')
             return res.redirect(`/work/msed`)
           }
+          callback()
         })
       })
-    }
-    req.flash('success', 'Msed_data uploaded successfully! Thanks for supporting seedhelper.')
-    res.redirect('/work')
+    }, err => {
+      if (err) {
+        req.flash('error', 'Looping error. Please report this.')
+        res.redirect('/work')
+      }
+      req.flash('success', 'Msed_data uploaded successfully! Thanks for supporting seedhelper.')
+      res.redirect('/work')
+    })
   } else {
     req.flash('error', 'No msed_data files were found.')
     res.redirect('/work/msed')
